@@ -1,0 +1,45 @@
+<RCC>
+    <qresource prefix="/img">
+        <file alias="error">image/error.png</file>
+		<file alias="metting">image/metting.png</file>
+        <file alias="meeting_camera">image/meeting_camera.png</file>
+        <file alias="meeting_mic">image/meeting_mic.png</file>
+        <file alias="meeting_setting">image/meeting_setting.png</file>
+        <file alias="meeting_camera_close">image/meeting_camera_close.png</file>
+        <file alias="meeting_mic_close">image/meeting_mic_close.png</file>
+        <file alias="bg_video_disable">image/bg_video_disable.png</file>
+        <file alias="warning">image/warning.png</file>
+        <file alias="meeting_close">image/close.png</file>
+        <file alias="setting_close">image/setting_close.png</file>
+        <file alias="sld_handle">image/sld_handle.png</file>
+        <file alias="red_circle">image/red_circle.png</file>
+        <file alias="meeting_big_cam">image/big_camera.png</file>
+        <file alias="meeting_big_mic">image/big_mic.png</file>
+        <file alias="meeting_big_setting">image/big_setting.png</file>
+        <file alias="hang_up">image/hang_up.png</file>
+        <file alias="meeting_record">image/record.png</file>
+        <file alias="meeting_share">image/share_screen.png</file>
+        <file alias="meeting_user_list">image/user_list.png</file>
+        <file alias="meeting_sharing">image/sharing.png</file>
+        <file alias="mute_logo">image/mute_logo_.png</file>
+        <file alias="give_mic">image/give_mic.png</file>
+        <file alias="mic_close_16">image/mic_close_16.png</file>
+        <file alias="mic_normal_16">image/mic_normal_16.png</file>
+        <file alias="mic_speech_16">image/mic_speech_16.png</file>
+        <file alias="video_16">image/video_16.png</file>
+        <file alias="video_close_16">image/video_close_16.png</file>
+        <file alias="thumb_down">image/thumb_down.png</file>
+        <file alias="thumb_down_hover">image/thumb_hover_down.png</file>
+        <file alias="thumb_up">image/thumb_up.png</file>
+        <file alias="thumb_up_hover">image/thumb_up_hover.png</file>
+        <file alias="meeting_recording">image/recording.png</file>
+        <file alias="meeting_user_list_select">image/user_list_select.png</file>
+        <file alias="meeting_big_cam_close">image/big_camera_close.png</file>
+        <file alias="meeting_big_mic_close">image/big_mic_close.png</file>
+        <file alias="meeting_big_sharing">image/big_sharing.png</file>
+        <file alias="meeting/dustbin">image/dustbin.png</file>
+        <file alias="meeting/info">image/info.png</file>
+        <file alias="meeting/up">image/up.png</file>
+        <file alias="meeting/down">image/down.png</file>
+    </qresource>
+</RCC>

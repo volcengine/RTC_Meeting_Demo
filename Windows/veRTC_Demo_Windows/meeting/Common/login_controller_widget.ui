@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LoginControllerWidget</class>
+ <widget class="QWidget" name="LoginControllerWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>736</width>
+    <height>80</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>736</width>
+    <height>80</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>736</width>
+    <height>80</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">*{
+	font-family : 'Microsoft YaHei';
+	font-size:14px;
+}
+
+QWidget{
+	background:#fff;
+}
+
+#lbl_login{
+	font-size:16px;
+	color:black;
+}
+
+#edt_room_id,#edt_user_id{
+	font-size:12px;
+	border: 1px solid rgba(0,0,0,0);
+	padding-top:5px;
+	padding-right:5px;
+	padding-bottom:5px;
+	background: #F2F3F5;
+	border-radius: 2px;
+}
+
+#edt_room_id:hover,#edt_user_id:hover{
+	background: #E5E8EF;
+}
+
+
+#edt_room_id:focus,#edt_user_id:focus{
+	background: #E8F3FF;
+	border: 1px solid #1664FF;
+	border-radius: 2px;
+}
+
+
+#btn_join_room{
+	color:#fff;
+	background: #165DFF;
+	border-radius: 2px;
+}
+
+#btn_join_room:hover{
+	background: #4080FF;
+}
+
+#btn_join_room:pressed{
+	background:#0E42D2;
+}
+
+#btn_join_room:disabled{
+	background:#94BFFF;
+}
+
+#btn_mic{
+	background: #F2F3F5;
+	border-radius: 16px;
+	background-image:url(:img/meeting_mic);
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+#btn_mic:hover{
+	background:#E5E6EB;
+	background-image:url(:img/meeting_mic);
+    background-position:center;
+    background-repeat:no-repeat;
+
+}
+
+#btn_mic:pressed{
+	background:#C9CDD4;
+	background-image:url(:img/meeting_mic);
+    background-position:center;
+    background-repeat:no-repeat;
+
+}
+
+#btn_camera{
+	background: #F2F3F5;
+	border-radius: 16px;
+	background-image:url(:img/meeting_camera);
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+#btn_camera:hover{
+	background:#E5E6EB;
+	background-image:url(:img/meeting_camera);
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+#btn_camera:pressed{
+	background:#C9CDD4;
+	background-image:url(:img/meeting_camera);
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+#btn_setting{
+	background: #F2F3F5;
+	border-radius: 16px;
+	background-image:url(:img/meeting_setting);
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+#btn_setting:hover{
+	background:#E5E6EB;
+	background-image:url(:img/meeting_setting);
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+#btn_setting:pressed{
+	background:#C9CDD4;
+	background-image:url(:img/meeting_setting);
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+
+
+
+</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>16</number>
+   </property>
+   <property name="leftMargin">
+    <number>24</number>
+   </property>
+   <property name="rightMargin">
+    <number>24</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="lbl_login">
+     <property name="minimumSize">
+      <size>
+       <width>32</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>32</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>登录</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="edt_room_id">
+     <property name="minimumSize">
+      <size>
+       <width>160</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>160</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="placeholderText">
+      <string>房间ID</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="edt_user_id">
+     <property name="minimumSize">
+      <size>
+       <width>160</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>160</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="placeholderText">
+      <string>用户ID</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btn_join_room">
+     <property name="minimumSize">
+      <size>
+       <width>88</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>88</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>进入房间</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btn_mic">
+     <property name="minimumSize">
+      <size>
+       <width>32</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>32</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btn_camera">
+     <property name="minimumSize">
+      <size>
+       <width>32</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>32</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btn_setting">
+     <property name="minimumSize">
+      <size>
+       <width>32</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>32</width>
+       <height>32</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
