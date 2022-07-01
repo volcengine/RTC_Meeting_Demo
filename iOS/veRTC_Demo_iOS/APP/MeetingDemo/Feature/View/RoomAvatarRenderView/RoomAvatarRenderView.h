@@ -1,0 +1,28 @@
+//
+//  RoomAvatarRenderView.h
+//  SceneRTCDemo
+//
+//  Created by bytedance on 2021/3/12.
+//
+
+#import <UIKit/UIKit.h>
+#import "RoomVideoSession.h"
+
+typedef NS_ENUM(NSInteger, RoomAvatarStatus) {
+    //Normal Jiugongge
+    RoomAvatarStatusGalleryNone,
+    //One person nine squares
+    RoomAvatarStatusGalleryOne,
+    //Full Jiugongge
+    RoomAvatarStatusGalleryFull,
+    //Speaker
+    RoomAvatarStatusSpaker,
+};
+
+@interface RoomAvatarRenderView : UIView
+
+@property (nonatomic, assign) RoomAvatarStatus avatarStatus;
+
+@property (nonatomic, strong) RoomVideoSession *userModel;
+
+@end
