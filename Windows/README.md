@@ -80,8 +80,7 @@ cmd 窗口下进入安装包代码下载的目录，执行 `cmake -G "Visual Stu
 
 <img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_d3ebd85a76174b1083f21c8f0102cb1b" width="500px" >
 
-<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_9a4d6f93beda09b87a5ac6cdb797c9b6" width="500px" >
-
+<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_7adb082802706d1781679ef3b3d7cd12" width="500px" >
 ### 步骤 9：编译运行
 
 1. 进入 `veRTC_Demo_Windows/build_win` 目录，使用 Visual Studio 打开工程文件 `VeRTCDemo.sln`。
