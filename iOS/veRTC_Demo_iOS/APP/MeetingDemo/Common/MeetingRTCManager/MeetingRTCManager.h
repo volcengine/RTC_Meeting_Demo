@@ -58,10 +58,10 @@
 - (int)setEnableSpeakerphone:(BOOL)enableSpeaker;
 
 /*
- * Switch local audio capture
- * @param mute ture:Turn on audio capture false：Turn off audio capture
+ * Switch local audio publish stream
+ * @param isPublish ture:Turn on audio publish stream false：Turn off audio publish stream
  */
-- (void)enableLocalAudio:(BOOL)enable;
+- (void)publishStreamAudio:(BOOL)isPublish;
 
 /*
  * Switch local video capture

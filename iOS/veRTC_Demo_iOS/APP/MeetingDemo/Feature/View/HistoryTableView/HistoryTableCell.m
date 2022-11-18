@@ -2,8 +2,8 @@
 //  HistoryTableCell.m
 //  quickstart
 //
-//  Created by bytedance on 2021/3/23.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/3/23.
+//  
 //
 
 #import "HistoryTableCell.h"
@@ -23,7 +23,7 @@
     if (self) {
         self.backgroundColor = [UIColor clearColor];
         self.contentView.backgroundColor = [UIColor clearColor];
-        [self createUIComponents];
+        [self createUIComponent];
     }
     return self;
 }
@@ -39,7 +39,7 @@
 }
 
 
-- (void)createUIComponents {
+- (void)createUIComponent {
     [self.contentView addSubview:self.settingsLabel];
     [self.settingsLabel setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [self.settingsLabel mas_makeConstraints:^(MASConstraintMaker *make) {

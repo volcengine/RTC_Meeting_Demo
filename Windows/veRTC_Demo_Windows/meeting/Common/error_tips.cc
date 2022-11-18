@@ -2,6 +2,7 @@
 #include <QGraphicsDropShadowEffect>
 #include <QLabel>
 #include <QPainter>
+#include <QDebug>
 
 static const char* kMainQss = "#lbl_title{"
     "font-family : 'Microsoft YaHei';"
@@ -43,7 +44,8 @@ ErrorTips::ErrorTips(QWidget* parent) : QWidget(parent) {
 	this->setGraphicsEffect(effect);
 }
 
-ErrorTips::~ErrorTips() {}
+ErrorTips::~ErrorTips() {
+}
 
 void ErrorTips::setInfoDataText(const QString& text) {
     if (lbl_data) {

@@ -28,6 +28,7 @@ public:
 
 	static int muteLocalAudio(bool bMute);
 	static int muteLocalVideo(bool bMute);
+	static int setLocalMirrorMode(bool isMirrored);
 
 	static int login(const std::string& roomid, const std::string& uid,
 		const std::string& token);
@@ -64,9 +65,9 @@ public:
 	static int feedBack(const std::string& str);
 
  public:
-	 void onVideoStateChanged(std::string device_id, bytertc::MediaDeviceType device_type,
+	 void onVideoStateChanged(std::string device_id,
 		 bytertc::MediaDeviceState device_state, bytertc::MediaDeviceError error);
-	 void onAudioStateChanged(std::string device_id, bytertc::MediaDeviceType device_type,
+	 void onAudioStateChanged(std::string device_id,
 		 bytertc::MediaDeviceState device_state, bytertc::MediaDeviceError error);
 
 signals:

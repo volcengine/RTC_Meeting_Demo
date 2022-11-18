@@ -1,9 +1,9 @@
-#import "MockDataCompoments.h"
+#import "MockDataComponent.h"
 #import "SettingsRightLabelCell.h"
 #import "SettingsService.h"
 #import "SettingsSwitchCell.h"
 #import "SettingViewController.h"
-#import "MeetingPickerCompoments.h"
+#import "MeetingPickerComponent.h"
 #import "SettingsSliderView.h"
 #import "HistoryViewController.h"
 
@@ -25,11 +25,11 @@ typedef NS_ENUM(NSInteger, SettingsGroupType) {
 
 @interface SettingViewController () <UITableViewDelegate, UITableViewDataSource>
 @property (nonatomic, strong) UITableView *settingsTableView;
-@property (nonatomic, strong) NSArray *groupTypes;
-@property (nonatomic, strong) MockDataCompoments *localDataModel;
+@property (nonatomic, copy) NSArray *groupTypes;
+@property (nonatomic, strong) MockDataComponent *localDataModel;
 
-@property (nonatomic, strong) MeetingPickerCompoments *resolutionPicker;
-@property (nonatomic, strong) MeetingPickerCompoments *frameRatePicker;
+@property (nonatomic, strong) MeetingPickerComponent *resolutionPicker;
+@property (nonatomic, strong) MeetingPickerComponent *frameRatePicker;
 
 @property (nonatomic, copy) NSArray *currentResolutionItem;
 @property (nonatomic, strong) NSNumber *currentFrameRate;
@@ -52,7 +52,7 @@ typedef NS_ENUM(NSInteger, SettingsGroupType) {
                         @"屏幕共享分辨率", @"屏幕共享帧率", @"屏幕共享码率",
                         @"实时视频参数", @"查看历史会议", @"我的云录制"];
 
-    [self createUIComponents];
+    [self createUIComponent];
     [self defaultSelectBitRateRang];
     [self defaultSelectScreenBitRateRang];
     [self.settingsTableView reloadData];
@@ -72,7 +72,7 @@ typedef NS_ENUM(NSInteger, SettingsGroupType) {
     self.navTitle = @"会议设置";
 }
 
-- (void)createUIComponents {
+- (void)createUIComponent {
     [self.view addSubview:self.settingsTableView];
     [self.settingsTableView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.navView.mas_bottom);
@@ -322,24 +322,24 @@ typedef NS_ENUM(NSInteger, SettingsGroupType) {
     return _settingsTableView;
 }
 
-- (MockDataCompoments *)localDataModel {
+- (MockDataComponent *)localDataModel {
     if (!_localDataModel) {
-        _localDataModel = [[MockDataCompoments alloc] init];
+        _localDataModel = [[MockDataComponent alloc] init];
     }
     return _localDataModel;
 }
 
-- (MeetingPickerCompoments *)resolutionPicker {
+- (MeetingPickerComponent *)resolutionPicker {
     if (!_resolutionPicker) {
-        _resolutionPicker = [[MeetingPickerCompoments alloc] initWithHeight:566/2 superView:self.view];
+        _resolutionPicker = [[MeetingPickerComponent alloc] initWithHeight:566/2 superView:self.view];
         _resolutionPicker.titleStr = @"分辨率";
     }
     return _resolutionPicker;
 }
 
-- (MeetingPickerCompoments *)frameRatePicker {
+- (MeetingPickerComponent *)frameRatePicker {
     if (!_frameRatePicker) {
-        _frameRatePicker = [[MeetingPickerCompoments alloc] initWithHeight:195 superView:self.view];
+        _frameRatePicker = [[MeetingPickerComponent alloc] initWithHeight:195 superView:self.view];
         _frameRatePicker.titleStr = @"帧率";
     }
     return _frameRatePicker;

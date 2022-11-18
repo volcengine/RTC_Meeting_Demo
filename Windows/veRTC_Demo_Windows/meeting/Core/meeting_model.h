@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <vector>
 
-struct VideoResolution {
+struct VideoResolution{
   int width = 160;
   int height = 160;
 };

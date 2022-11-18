@@ -18,12 +18,12 @@
     if (self) {
         self.backgroundColor = [UIColor clearColor];
         self.contentView.backgroundColor = [UIColor clearColor];
-        [self createUIComponents];
+        [self createUIComponent];
     }
     return self;
 }
 
-- (void)createUIComponents {
+- (void)createUIComponent {
     [self.contentView addSubview:self.settingsLabel];
     [self.settingsLabel mas_makeConstraints:^(MASConstraintMaker *make) {
       make.left.equalTo(self.contentView).mas_offset(15.f);

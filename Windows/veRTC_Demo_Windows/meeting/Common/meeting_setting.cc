@@ -211,31 +211,33 @@ void MeetingSetting::initConnect() {
           });
 
   QObject::connect(&MeetingRtcEngineWrap::instance(),
-      &MeetingRtcEngineWrap::sigUpdateDevices, this, [this](){
-		  if (isVisible()) {
+      &MeetingRtcEngineWrap::sigUpdateDevices, this, [this]() {
+          if (isVisible()) {
               updateData();
-		  }
+          }
       });
 }
 
 void MeetingSetting::initView() {
-  setting_ = meeting::DataMgr::instance().setting();
-  ui->cmb_fps->setCurrentIndex(getFpsCmbIdxFromFps(setting_.camera.fps));
-  ui->sldr_kbps->setMinValue(setting_.camera.kbpsRange.min_kbps);
-  ui->sldr_kbps->setMaxValue(setting_.camera.kbpsRange.max_kbps);
-  ui->sldr_kbps->setValue(setting_.camera.kbps);
-  ui->sldr_screen_kbps->setMinValue(setting_.screen.kbpsRange.min_kbps);
-  ui->sldr_screen_kbps->setMaxValue(setting_.screen.kbpsRange.max_kbps);
-  ui->sldr_screen_kbps->setValue(setting_.screen.kbps);
-  ui->cmb_resolution->setCurrentIndex(
-      utils::getIdxFromResolution(setting_.camera.resolution));
-  ui->cmb_screen_resolution->setCurrentIndex(
-      utils::getIdxFromResolution(setting_.screen.resolution));
-  ui->btn_enable_param->setChecked(setting_.enable_show_info);
-  updateData();
+    setting_ = meeting::DataMgr::instance().setting();
+    ui->cmb_fps->setCurrentIndex(getFpsCmbIdxFromFps(setting_.camera.fps));
+    ui->sldr_kbps->setMinValue(setting_.camera.kbpsRange.min_kbps);
+    ui->sldr_kbps->setMaxValue(setting_.camera.kbpsRange.max_kbps);
+    ui->sldr_kbps->setValue(setting_.camera.kbps);
+    ui->sldr_screen_kbps->setMinValue(setting_.screen.kbpsRange.min_kbps);
+    ui->sldr_screen_kbps->setMaxValue(setting_.screen.kbpsRange.max_kbps);
+    ui->sldr_screen_kbps->setValue(setting_.screen.kbps);
+    ui->cmb_resolution->setCurrentIndex(
+        utils::getIdxFromResolution(setting_.camera.resolution));
+    ui->cmb_screen_resolution->setCurrentIndex(
+        utils::getIdxFromResolution(setting_.screen.resolution));
+    ui->btn_enable_param->setChecked(setting_.enable_show_info);
+    updateData();
 }
 
-MeetingSetting::~MeetingSetting() { delete ui; }
+MeetingSetting::~MeetingSetting() { 
+    delete ui; 
+}
 
 void MeetingSetting::updateData() {
     ui->cmb_camera->clear();
@@ -244,19 +246,15 @@ void MeetingSetting::updateData() {
     std::vector<RtcDevice> camera_devices;
     MeetingRtcEngineWrap::getAudioInputDevices(audio_input_devices);
     MeetingRtcEngineWrap::getVideoCaptureDevices(camera_devices);
-    int idx = 0;
     for (auto& dc : camera_devices) {
-		ui->cmb_camera->addItem(dc.name.c_str());
-		ui->cmb_camera->setItemData(idx, QVariant::fromValue(idx),
-			Qt::UserRole + 1);
-		idx++;
+        ui->cmb_camera->addItem(dc.name.c_str());
     }
 
     if (camera_devices.empty()) {
         setting_.camera_idx = -1;
     } else {
 	    ui->cmb_camera->blockSignals(true);
-	    setting_.camera_idx = camera_devices.size() - 1;
+	    setting_.camera_idx = RtcEngineWrap::instance().getCurrentVideoCaptureDeviceIndex();
 	    ui->cmb_camera->setCurrentIndex(setting_.camera_idx);
 	    ui->cmb_camera->blockSignals(false);
     }
@@ -268,23 +266,22 @@ void MeetingSetting::updateData() {
 
     for (auto& dc : audio_input_devices) {
 		ui->cmb_mic->addItem(dc.name.c_str());
-		ui->cmb_mic->setItemData(idx, QVariant::fromValue(idx), Qt::UserRole + 1);
-		idx++;
     }
 
     if (audio_input_devices.empty()) {
         setting_.mic_idx = -1;
-    } else {
-	    ui->cmb_mic->blockSignals(true);
-        setting_.mic_idx = audio_input_devices.size() - 1;
-	    ui->cmb_mic->setCurrentIndex(setting_.mic_idx);
-	    ui->cmb_mic->blockSignals(false);
     }
-	
+    else {
+        ui->cmb_mic->blockSignals(true);
+        setting_.mic_idx = RtcEngineWrap::instance().getCurrentAudioInputDeviceIndex();
+        ui->cmb_mic->setCurrentIndex(setting_.mic_idx);
+        ui->cmb_mic->blockSignals(false);
+    }
+
     if (setting_.mic_idx == -1) {
-		ui->cmb_mic->setCurrentIndex(0);
-		setting_.mic_idx = 0;
-	}
+        ui->cmb_mic->setCurrentIndex(0);
+        setting_.mic_idx = 0;
+    }
 
     vrd::MeetingSession::instance().getHistoryMeetingRecord(
         [=, shared_list = recored_list_view_,
@@ -316,10 +313,11 @@ void MeetingSetting::showEvent(QShowEvent* e) {}
 bool MeetingSetting::eventFilter(QObject* o, QEvent* e) { return false; }
 
 void MeetingSetting::closeEvent(QCloseEvent* e) {
-  e->ignore();
-  if (code_ == QDialog::Accepted) {
-    this->accept();
-  } else {
-    reject();
-  }
+    e->ignore();
+    if (code_ == QDialog::Accepted) {
+        this->accept();
+    }
+    else {
+        reject();
+    }
 }

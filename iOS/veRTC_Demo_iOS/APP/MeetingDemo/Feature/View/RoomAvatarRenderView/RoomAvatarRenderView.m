@@ -2,17 +2,17 @@
 //  RoomAvatarRenderView.m
 //  SceneRTCDemo
 //
-//  Created by bytedance on 2021/3/12.
+//  Created by on 2021/3/12.
 //
 
 #import "RoomAvatarRenderView.h"
-#import "MeetingAvatarCompoments.h"
+#import "MeetingAvatarComponent.h"
 #import "RoomAvatarRenderTagView.h"
 
 @interface RoomAvatarRenderView ()
 
 //Show when there is no video
-@property (nonatomic, strong) MeetingAvatarCompoments *avatarBgView;
+@property (nonatomic, strong) MeetingAvatarComponent *avatarBgView;
 @property (nonatomic, strong) RoomAvatarRenderTagView *emptyVideoTagView;
 @property (nonatomic, strong) UIView *avatarSpeakView;
 
@@ -162,9 +162,9 @@
     return _renderView;
 }
 
-- (MeetingAvatarCompoments *)avatarBgView {
+- (MeetingAvatarComponent *)avatarBgView {
     if (!_avatarBgView) {
-        _avatarBgView = [[MeetingAvatarCompoments alloc] init];
+        _avatarBgView = [[MeetingAvatarComponent alloc] init];
         _avatarBgView.layer.masksToBounds = YES;
     }
     return _avatarBgView;

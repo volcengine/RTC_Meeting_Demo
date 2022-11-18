@@ -16,6 +16,7 @@ public:
     ~ShareScreenWidget();
 
     void updateData();
+    bool canStartSharing();
 
 private:
     Ui::ShareScreenWidget *ui;

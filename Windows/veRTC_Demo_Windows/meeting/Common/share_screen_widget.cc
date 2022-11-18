@@ -6,54 +6,61 @@
 #include "meeting/Core/meeting_rtc_wrap.h"
 #include "meeting/Core/meeting_session.h"
 #include "meeting/Core/page_manager.h"
-#include "meeting/common/share_view_wnd.h"
+#include "core/component/share_view_wnd.h"
 #include "ui_share_screen_widget.h"
 
 ShareScreenWidget::ShareScreenWidget(QWidget* parent)
     : QDialog(parent), ui(new Ui::ShareScreenWidget) {
-  ui->setupUi(this);
-  setWindowFlags(Qt::FramelessWindowHint);
-  ui->screen_views->setMinimumWidth(width());
-  ui->window_views->setMinimumWidth(width());
-  ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  updateData();
-  connect(ui->btn_close, &QPushButton::clicked, this, [=] { this->reject(); });
-  connect(ui->screen_views, &ShareViewContainer::sigItemPressed, this,
-          [=](SnapshotAttr attr) {
-            vrd::MeetingSession::instance().startScreenShare([=](int code) {
-              if (code != 200) {
-                WarningTips::showTips(
-                    QString("屏幕共享失败err:%1").arg(code), TipsType::kWarning,
-                    meeting::PageManager::currentWidget(), 2000);
+    ui->setupUi(this);
+    setWindowFlags(Qt::FramelessWindowHint);
+    ui->screen_views->setMinimumWidth(width());
+    ui->window_views->setMinimumWidth(width());
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    updateData();
+    connect(ui->btn_close, &QPushButton::clicked, this, [=] { this->reject(); });
+    connect(ui->screen_views, &ShareViewContainer::sigItemPressed, this,
+        [=](SnapshotAttr attr) {
+            if (!canStartSharing()) {
                 return;
-              }
-              auto r = meeting::DataMgr::instance().room();
-              r.screen_shared_uid = meeting::DataMgr::instance().user_id();
-              meeting::DataMgr::instance().setRoom(std::move(r));
-              std::vector<void*> excluded;
-              MeetingRtcEngineWrap::instance().startScreenCapture(
-                  attr.source_id, excluded);
-            });
-            this->accept();
-          });
+            }
 
-  connect(ui->window_views, &ShareViewContainer::sigItemPressed, this,
-          [=](SnapshotAttr attr) {
             vrd::MeetingSession::instance().startScreenShare([=](int code) {
-              if (code != 200) {
-                WarningTips::showTips(
-                    QString("屏幕共享失败err:%1").arg(code), TipsType::kWarning,
-                    meeting::PageManager::currentWidget(), 2000);
-                return;
-              }
-              auto r = meeting::DataMgr::instance().room();
-              r.screen_shared_uid = meeting::DataMgr::instance().user_id();
-              meeting::DataMgr::instance().setRoom(std::move(r));
-              MeetingRtcEngineWrap::instance().startScreenCaptureByWindowId(
-                  attr.source_id);
-            });
+                if (code != 200) {
+                    WarningTips::showTips(
+                        QString("屏幕共享失败err:%1").arg(code), TipsType::kWarning,
+                        meeting::PageManager::currentWidget(), 2000);
+                    return;
+                }
+                auto r = meeting::DataMgr::instance().room();
+                r.screen_shared_uid = meeting::DataMgr::instance().user_id();
+                meeting::DataMgr::instance().setRoom(std::move(r));
+                std::vector<void*> excluded;
+                MeetingRtcEngineWrap::instance().startScreenCapture(
+                    attr.source_id, excluded);
+                });
             this->accept();
-          });
+        });
+
+    connect(ui->window_views, &ShareViewContainer::sigItemPressed, this,
+        [=](SnapshotAttr attr) {
+            if (!canStartSharing()) {
+                return;
+            }
+            vrd::MeetingSession::instance().startScreenShare([=](int code) {
+                if (code != 200) {
+                    WarningTips::showTips(
+                        QString("屏幕共享失败err:%1").arg(code), TipsType::kWarning,
+                        meeting::PageManager::currentWidget(), 2000);
+                    return;
+                }
+                auto r = meeting::DataMgr::instance().room();
+                r.screen_shared_uid = meeting::DataMgr::instance().user_id();
+                meeting::DataMgr::instance().setRoom(std::move(r));
+                MeetingRtcEngineWrap::instance().startScreenCaptureByWindowId(
+                    attr.source_id);
+                });
+            this->accept();
+        });
 }
 
 ShareScreenWidget::~ShareScreenWidget() { delete ui; }
@@ -74,4 +81,17 @@ void ShareScreenWidget::updateData() {
                                     attr.type, attr.source_id, 160, 90)));
     }
   }
+}
+
+bool ShareScreenWidget::canStartSharing() {
+    auto cur_share_uid =
+        meeting::DataMgr::instance().room().screen_shared_uid;
+    if (!cur_share_uid.empty() &&
+        cur_share_uid != meeting::DataMgr::instance().user_id()) {
+        WarningTips::showTips("屏幕共享发起失败，请提示前一位参会者结束共享",
+            TipsType::kWarning,
+            this, 2000);
+        return false;
+    }
+    return true;
 }

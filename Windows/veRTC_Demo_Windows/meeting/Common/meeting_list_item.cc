@@ -3,11 +3,11 @@
 #include <iostream>
 
 #include "hint_tips.h"
+#include "core/util.h"
 #include "meeting/Common/tips_dlg.h"
 #include "meeting/Common/warning_tips.h"
 #include "meeting/Core/meeting_session.h"
 #include "meeting/Core/page_manager.h"
-#include "meeting/Core/utils.h"
 #include "meeting/core/data_mgr.h"
 #include "ui_meeting_list_item.h"
 
@@ -36,6 +36,7 @@ MeetingListItem::MeetingListItem(QWidget *parent)
       if (uid_ != meeting::DataMgr::instance().user_id().c_str()) {
         auto dlg = new TipsDlg();
         auto uid = std::string(uid_.toUtf8().constData());
+        dlg->setText(QString("是否将支持人移交给: %1").arg(name_));
         if (QDialog::Accepted != dlg->exec()) return;
         vrd::MeetingSession::instance().changeHost(uid, [uid](int code) {
           if (code != 200) {
@@ -133,7 +134,7 @@ void MeetingListItem::setVideoState(MeetingVideoState state, bool froce) {
 void MeetingListItem::setName(const QString &str) {
   name_ = str;
   ui->lbl_name->setText(
-      utils::elideText(ui->lbl_ico->font(), str, 134));
+      util::elideText(ui->lbl_ico->font(), str, 134));
   ui->lbl_ico->setText(name_.left(1).toUpper());
 }
 

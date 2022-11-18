@@ -2,8 +2,8 @@
 //  HistoryTableView.m
 //  quickstart
 //
-//  Created by bytedance on 2021/3/23.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/3/23.
+//  
 //
 
 #import "HistoryTableView.h"
@@ -50,11 +50,13 @@
 
     MeetingControlRecordModel *mdel = self.dataLists[indexPath.row];
     if (mdel.download_url && [mdel.download_url isKindOfClass:[NSString class]] && mdel.download_url.length > 0) {
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:mdel.download_url]
-                                           options:@{}
-                                 completionHandler:^(BOOL success) {
-            
-        }];
+        if (@available(iOS 10.0, *)) {
+            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:mdel.download_url]
+                                               options:@{}
+                                     completionHandler:^(BOOL success) {
+                
+            }];
+        }
     }
 }
 
@@ -109,7 +111,7 @@
             
             [tableView reloadData];
         } else {
-            [[ToastComponents shareToastComponents] showWithMessage:ackModel.message];
+            [[ToastComponent shareToastComponent] showWithMessage:ackModel.message];
         }
     }];
 }

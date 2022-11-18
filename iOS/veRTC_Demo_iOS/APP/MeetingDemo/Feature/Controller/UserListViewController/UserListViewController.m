@@ -44,7 +44,7 @@
 - (void)muteAllButtonAction {
     [MeetingRTMManager muteUser:@"" block:^(BOOL result, RTMACKModel * _Nonnull model) {
         if (!model.result) {
-            [[ToastComponents shareToastComponents] showWithMessage:model.message];
+            [[ToastComponent shareToastComponent] showWithMessage:model.message];
         }
     }];
 }
@@ -188,7 +188,7 @@
 - (void)changeHost:(NSString *)uid {
     [MeetingRTMManager changeHost:uid block:^(BOOL result, RTMACKModel * _Nonnull model) {
         if (!model.result) {
-            [[ToastComponents shareToastComponents] showWithMessage:model.message];
+            [[ToastComponent shareToastComponent] showWithMessage:model.message];
         }
     }];
 }

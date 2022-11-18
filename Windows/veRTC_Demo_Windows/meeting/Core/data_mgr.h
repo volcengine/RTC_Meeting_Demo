@@ -32,7 +32,7 @@ class DataMgr {
   PROPRETY(std::string, user_name, UserName)
   PROPRETY(bool, mute_audio, MuteAudio)
   PROPRETY(bool, mute_video, MuteVideo)
-  PROPRETY(bool, share_screen, ShareScreen)
+  PROPRETY(bool, share_screen, ShareScreen) //for local share state and remote share state
   PROPRETY(bool, record, Record)
   PROPRETY(bool, connect,Connect)
 

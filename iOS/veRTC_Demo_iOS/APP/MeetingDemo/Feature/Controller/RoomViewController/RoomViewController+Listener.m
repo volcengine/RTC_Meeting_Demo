@@ -2,7 +2,7 @@
 //  RoomViewController+Listener.m
 //  SceneRTCDemo
 //
-//  Created by bytedance on 2021/3/16.
+//  Created by on 2021/3/16.
 //
 
 #import "RoomViewController+Listener.h"
@@ -32,11 +32,11 @@
         if (wself && ![wself.currentRoomModel.host_id isEqualToString:wself.localVideoSession.uid]) {
             ButtonStatus status = [wself.bottomView getButtonStatus:RoomBottomStatusMic];
             if (status == ButtonStatusNone) {
-                [[MeetingRTCManager shareRtc] enableLocalAudio:NO];
+                [[MeetingRTCManager shareRtc] publishStreamAudio:NO];
                 wself.localVideoSession.isEnableAudio = NO;
                 [wself updateRenderModeViewWithMicStatus:wself.localVideoSession.uid enableMic:NO];
                 [wself.bottomView updateButtonStatus:RoomBottomStatusMic close:YES];
-                [[ToastComponents shareToastComponents] showWithMessage:@"你已被主持人静音"];
+                [[ToastComponent shareToastComponent] showWithMessage:@"你已被主持人静音"];
             }
         }
         [wself updateRenderModeViewWithMicStatus:@"" enableMic:NO];
@@ -50,11 +50,11 @@
                 if (status == ButtonStatusNone) {
                     //Close microphone
                     [MeetingRTMManager turnOffMic];
-                    [[MeetingRTCManager shareRtc] enableLocalAudio:NO];
+                    [[MeetingRTCManager shareRtc] publishStreamAudio:NO];
                     wself.localVideoSession.isEnableAudio = NO;
                     [wself updateRenderModeViewWithMicStatus:uid enableMic:NO];
                     [wself.bottomView updateButtonStatus:RoomBottomStatusMic close:YES];
-                    [[ToastComponents shareToastComponents] showWithMessage:@"你已被主持人静音"];
+                    [[ToastComponent shareToastComponent] showWithMessage:@"你已被主持人静音"];
                 }
             }
         }
@@ -71,7 +71,7 @@
             alertModel.alertModelClickBlock = ^(UIAlertAction * _Nonnull action) {
                 if ([action.title isEqualToString:@"确定"]) {
                     [MeetingRTMManager turnOnMic];
-                    [[MeetingRTCManager shareRtc] enableLocalAudio:YES];
+                    [[MeetingRTCManager shareRtc] publishStreamAudio:YES];
                     wself.localVideoSession.isEnableAudio = YES;
                     [wself updateRenderModeViewWithMicStatus:uid enableMic:YES];
                     [wself.bottomView updateButtonStatus:RoomBottomStatusMic close:NO];
@@ -110,7 +110,7 @@
     //User Kicked Off
     [MeetingRTMManager onUserKickedOffWithBlock:^(BOOL result) {
         if (wself) {
-            [wself hangUp];
+            [wself hangUp:NO];
             AlertActionModel *alertModel = [[AlertActionModel alloc] init];
             alertModel.title = @"确定";
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -148,7 +148,7 @@
     //Meeting end
     [MeetingRTMManager onMeetingEndWithBlock:^(BOOL result) {
         if (wself) {
-            [wself hangUp];
+            [wself hangUp:YES];
         }
     }];
     

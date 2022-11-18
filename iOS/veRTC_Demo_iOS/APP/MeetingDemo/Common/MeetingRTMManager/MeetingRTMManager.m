@@ -2,11 +2,12 @@
 //  MeetingRTMManager.m
 //  SceneRTCDemo
 //
-//  Created by bytedance on 2021/3/16.
+//  Created by on 2021/3/16.
 //
 
 #import "MeetingRTMManager.h"
 #import "MeetingRTCManager.h"
+#import "JoinRTSParams.h"
 #import "Core.h"
 
 @implementation MeetingRTMManager
@@ -16,10 +17,10 @@
 + (void)getAppIDWithUid:(NSString *)uid roomId:(NSString *)roomId block:(void (^)(NSString *appID, RTMACKModel *model))block {
     NSDictionary *dic = @{};
     if (uid && roomId && uid.length > 0 && roomId.length > 0) {
-        dic = @{@"user_id" : uid,
-                @"room_id" : roomId};
+        dic = @{@"user_id" : uid ?: @"",
+                @"room_id" : roomId ?: @""};
     }
-    dic = [PublicParameterCompoments addTokenToParams:dic];
+    dic = [JoinRTSParams addTokenToParams:dic];
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcGetAppID"
                                          with:dic
                                         block:^(RTMACKModel * _Nonnull ackModel) {
@@ -45,7 +46,7 @@
     [dic setValue:@(isEnableAudio) forKey:@"mic"];
     [dic setValue:@(loginModel.isEnableVideo) forKey:@"camera"];
     
-    NSDictionary *dicData = [PublicParameterCompoments addTokenToParams:[dic copy]];
+    NSDictionary *dicData = [JoinRTSParams addTokenToParams:[dic copy]];
     
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcJoinMeeting"
                                          with:dicData
@@ -61,9 +62,9 @@
                     RoomVideoSession *videoSession = [RoomVideoSession roomVideoSessionToMeetingControlUserModel:meetingUserModel];
                     [userLists addObject:videoSession];
                 }
-                BaseUserModel *localUser = [LocalUserComponents userModel];
+                BaseUserModel *localUser = [LocalUserComponent userModel];
                 localUser.name = loginModel.name;
-                [LocalUserComponents updateLocalUserModel:localUser];
+                [LocalUserComponent updateLocalUserModel:localUser];
             }
         }
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -75,42 +76,42 @@
 }
 
 + (void)leaveMeeting {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcLeaveMeeting"
                                          with:dic
                                         block:nil];
 }
 
 + (void)turnOnMic {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcTurnOnMic"
                                          with:dic
                                         block:nil];
 }
 
 + (void)turnOffMic {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcTurnOffMic"
                                          with:dic
                                         block:nil];
 }
 
 + (void)turnOnCamera {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcTurnOnCamera"
                                          with:dic
                                         block:nil];
 }
 
 + (void)turnOffCamera {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcTurnOffCamera"
                                          with:dic
                                         block:nil];
 }
 
 + (void)getMeetingUserInfo:(NSString *)userId block:(void (^)(NSArray<RoomVideoSession *> *userLists, RTMACKModel *model))block {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     if (NOEmptyStr(userId)) {
         NSMutableDictionary *mutableDictionary = [dic mutableCopy];
         [mutableDictionary setValue:userId forKey:@"user_id"];
@@ -139,7 +140,7 @@
 }
 
 + (void)getMeetingInfoWithBlock:(void (^)(MeetingControlRoomModel *roomModel, RTMACKModel *model))block {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcGetMeetingInfo"
                                          with:dic
@@ -154,7 +155,7 @@
 }
 
 + (void)getHistoryVideoRecord:(BOOL)isHolder block:(void (^)(NSArray<MeetingControlRecordModel *> *recordLists, RTMACKModel *model))block {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcGetHistoryVideoRecord"
                                          with:dic
@@ -179,7 +180,7 @@
 
 + (void)deleteVideoRecord:(NSString *)vid block:(void (^)(RTMACKModel *model))block {
     NSDictionary *dic = @{@"vid" : vid};
-    dic = [PublicParameterCompoments addTokenToParams:dic];
+    dic = [JoinRTSParams addTokenToParams:dic];
     
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcDeleteVideoRecord"
                                          with:dic
@@ -193,7 +194,7 @@
 }
 
 + (void)reconnectWithBlock:(void (^)(RTMACKModel *model))block {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcReconnect"
                                          with:dic
@@ -210,7 +211,7 @@
 #pragma mark - Control meeting status
 
 + (void)changeHost:(NSString *)userId block:(void (^)(BOOL result, RTMACKModel *model))block {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     if (NOEmptyStr(userId)) {
         NSMutableDictionary *mutableDictionary = [dic mutableCopy];
         [mutableDictionary setValue:userId forKey:@"user_id"];
@@ -229,7 +230,7 @@
 }
 
 + (void)muteUser:(NSString *)userId block:(void (^)(BOOL result, RTMACKModel *model))block {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     NSMutableDictionary *mutableDictionary = [dic mutableCopy];
     [mutableDictionary setValue:userId forKey:@"user_id"];
     dic = [mutableDictionary copy];
@@ -246,7 +247,7 @@
 }
 
 + (void)askMicOn:(NSString *)userId block:(void (^)(BOOL result))block {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     if (NOEmptyStr(userId)) {
         NSMutableDictionary *mutableDictionary = [dic mutableCopy];
         [mutableDictionary setValue:userId forKey:@"user_id"];
@@ -263,7 +264,7 @@
 }
 
 + (void)askCameraOn:(NSString *)userId block:(void (^)(BOOL result))block {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     if (NOEmptyStr(userId)) {
         NSMutableDictionary *mutableDictionary = [dic mutableCopy];
         [mutableDictionary setValue:userId forKey:@"user_id"];
@@ -278,17 +279,17 @@
 }
 
 + (void)endMeeting {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcEndMeeting" with:dic block:nil];
 }
 
 + (void)startShareScreen {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcStartShareScreen" with:dic block:nil];
 }
 
 + (void)endShareScreen {
-    NSDictionary *dic = [PublicParameterCompoments addTokenToParams:nil];
+    NSDictionary *dic = [JoinRTSParams addTokenToParams:nil];
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcEndShareScreen" with:dic block:nil];
 }
 
@@ -300,7 +301,7 @@
     if (screenId.length > 0) {
         [dic setValue:screenId forKey:@"screen_uid"];
     }
-    NSDictionary *dicData = [PublicParameterCompoments addTokenToParams:[dic copy]];
+    NSDictionary *dicData = [JoinRTSParams addTokenToParams:[dic copy]];
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcRecordMeeting" with:dicData block:^(RTMACKModel * _Nonnull ackModel) {
         if (block) {
             block(ackModel);
@@ -316,7 +317,7 @@
     if (screenId.length > 0) {
         [dic setValue:screenId forKey:@"screen_uid"];
     }
-    NSDictionary *dicData = [PublicParameterCompoments addTokenToParams:[dic copy]];
+    NSDictionary *dicData = [JoinRTSParams addTokenToParams:[dic copy]];
     [[MeetingRTCManager shareRtc] emitWithAck:@"vcUpdateRecordLayout" with:dicData block:nil];
 }
 

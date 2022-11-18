@@ -30,7 +30,7 @@ typedef NS_ENUM(NSInteger, RoomModeStatus) {
 - (instancetype)initWithVideoSession:(RoomVideoSession *)loginModel
                            userLists:(NSArray<RoomVideoSession *> *)userLists;
 
-- (void)hangUp;
+- (void)hangUp:(BOOL)isManual;
 
 - (void)updateRenderModeViewWithCameraStatus:(NSString *)uid enableCamera:(BOOL)isEnable;
 

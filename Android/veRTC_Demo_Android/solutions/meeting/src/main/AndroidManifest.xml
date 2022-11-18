@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.volcengine.vertcdemo.meeting">
+
+    <application>
+        <activity
+            android:name=".feature.createroom.CreateMeetingActivity"
+            android:exported="false"
+            android:icon="@drawable/ic_meeting"
+            android:label="@string/scene_meeting"
+            android:launchMode="singleTop"
+            tools:ignore="IntentFilterExportedReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="${applicationId}.category.SCENE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="scene_name_abbr"
+                android:value="meeting" />
+        </activity>
+        <activity
+            android:name=".feature.roommain.RoomActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:keepScreenOn="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".feature.settings.SettingsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".feature.participant.ParticipantActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".feature.history.HistoryActivity"
+            android:screenOrientation="portrait" />
+    </application>
+</manifest>

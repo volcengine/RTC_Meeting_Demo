@@ -2,8 +2,8 @@
 //  RoomVideoSession.h
 //  quickstart
 //
-//  Created by bytedance on 2021/4/2.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/4/2.
+//  
 //
 
 #import <Foundation/Foundation.h>

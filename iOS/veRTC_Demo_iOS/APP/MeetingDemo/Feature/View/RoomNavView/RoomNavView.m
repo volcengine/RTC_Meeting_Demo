@@ -2,8 +2,8 @@
 //  RoomNavView.m
 //  quickstart
 //
-//  Created by bytedance on 2021/3/23.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/3/23.
+//  
 //
 
 #import "RoomNavView.h"
@@ -76,8 +76,8 @@
 - (void)timerMethod {
     NSInteger minute = self.secondValue / 60;
     NSInteger second = self.secondValue - (minute * 60);
-    NSString *minuteStr = (minute < 10) ? [NSString stringWithFormat:@"0%ld", minute] : [NSString stringWithFormat:@"%ld", (long)minute];
-    NSString *secondStr = (second < 10) ? [NSString stringWithFormat:@"0%ld", second] : [NSString stringWithFormat:@"%ld", (long)second];
+    NSString *minuteStr = (minute < 10) ? [NSString stringWithFormat:@"0%ld", (long)minute] : [NSString stringWithFormat:@"%ld", (long)minute];
+    NSString *secondStr = (second < 10) ? [NSString stringWithFormat:@"0%ld", (long)second] : [NSString stringWithFormat:@"%ld", (long)second];
     self.timeLabel.text = [NSString stringWithFormat:@"%@:%@", minuteStr, secondStr];
     self.secondValue++;
 }
@@ -130,7 +130,7 @@
     UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
     pasteboard.string = self.localVideoSession.roomId;
     
-    [[ToastComponents shareToastComponents] showWithMessage:@"房间号已复制"];
+    [[ToastComponent shareToastComponent] showWithMessage:@"房间号已复制"];
 }
 
 #pragma mark - getter

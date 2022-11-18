@@ -2,8 +2,8 @@
 //  SampleHandler.m
 //  MeetingScreenShare
 //
-//  Created by bytedance on 2022/5/27.
-//  Copyright © 2022 bytedance. All rights reserved.
+//  Created by on 2022/5/27.
+//  
 //
 
 
@@ -48,11 +48,9 @@
     
     switch (sampleBufferType) {
         case RPSampleBufferTypeVideo:
+        case RPSampleBufferTypeAudioApp:
             [[ByteRtcScreenCapturerExt shared] processSampleBuffer:sampleBuffer
                                                           withType:sampleBufferType];
-            break;
-        case RPSampleBufferTypeAudioApp:
-            // Handle audio sample buffer for app audio
             break;
         case RPSampleBufferTypeAudioMic:
             // Handle audio sample buffer for mic audio

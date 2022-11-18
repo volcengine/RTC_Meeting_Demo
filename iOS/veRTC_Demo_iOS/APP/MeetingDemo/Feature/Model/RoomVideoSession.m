@@ -2,8 +2,8 @@
 //  RoomVideoSession.m
 //  quickstart
 //
-//  Created by bytedance on 2021/4/2.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/4/2.
+//  
 //
 
 #import "RoomVideoSession.h"
@@ -27,6 +27,7 @@
         canvas.renderMode = ByteRTCRenderModeHidden;
         canvas.view.backgroundColor = [UIColor clearColor];
         canvas.view = _streamView;
+        canvas.roomId = self.roomId;
         if (self.isLoginUser) {
             //Local Video
             [[MeetingRTCManager shareRtc] setupLocalVideo:canvas];
@@ -53,7 +54,7 @@
 }
 
 - (BOOL)isLoginUser {
-    if ([self.uid isEqualToString:[LocalUserComponents userModel].uid]) {
+    if ([self.uid isEqualToString:[LocalUserComponent userModel].uid]) {
         return YES;
     } else {
         return NO;
@@ -61,7 +62,7 @@
 }
 
 - (BOOL)isVideoStream {
-    if ([self.uid isEqualToString:[LocalUserComponents userModel].uid]) {
+    if ([self.uid isEqualToString:[LocalUserComponent userModel].uid]) {
         return YES;
     } else {
         return _isVideoStream;

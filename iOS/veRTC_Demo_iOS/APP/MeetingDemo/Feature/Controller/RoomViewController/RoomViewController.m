@@ -8,8 +8,8 @@
 #import "RoomViewController+Sort.h"
 #import "RoomSpeakerView.h"
 #import "RoomParamInfoView.h"
-#import "MeetingEndCompoments.h"
-#import "MeetingScreenComponents.h"
+#import "MeetingEndComponent.h"
+#import "MeetingScreenComponent.h"
 #import "MeetingRTCManager.h"
 #import "MeetingRTMManager.h"
 #import "NetworkingTool.h"
@@ -22,12 +22,12 @@
 @property (nonatomic, weak) UserListViewController *userListViewController;
 @property (nonatomic, strong) RoomMatrixView *videoMatrixView;
 @property (nonatomic, strong) RoomSpeakerView *videoSpeakerView;
-@property (nonatomic, strong) MeetingEndCompoments *endCompoments;
+@property (nonatomic, strong) MeetingEndComponent *endComponent;
 
 @property (nonatomic, strong) NSString *recordID;
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSString *> *currentStreamDic;
 @property (nonatomic, assign) BOOL isLandscape;
-@property (nonatomic, strong) MeetingScreenComponents *screenComponents;
+@property (nonatomic, strong) MeetingScreenComponent *screenComponent;
 
 @property (nonatomic, strong) dispatch_semaphore_t lock;
 
@@ -54,7 +54,7 @@
     
     [self addSocketListener];
     [self addOrientationNotice];
-    [self createUIComponents];
+    [self createUIComponent];
 
     [self loadDataWithMeetingContrller:NO];
     [MeetingRTCManager shareRtc].delegate = self;
@@ -70,8 +70,14 @@
     };
     
     [MeetingRTCManager shareRtc].rtcJoinRoomBlock = ^(NSString * _Nonnull roomId, NSInteger errorCode, NSInteger joinType) {
-        if (joinType != 0 && errorCode == 0) {
-            [wself meetingReconnect];
+        if (errorCode == 0) {
+            if (joinType == 0) {
+                // 首次进房成功
+                [wself getMeetingUserInfo];
+            } else {
+                // 断网重连成功后，进房成功
+                [wself meetingReconnect];
+            }
         }
     };
     
@@ -126,7 +132,7 @@
 
 #pragma mark - Publish Action
 
-- (void)hangUp {
+- (void)hangUp:(BOOL)isManual {
     //Stop sort timer
     [self stopSort];
     //User screen sharing
@@ -144,7 +150,7 @@
     [[MeetingRTCManager shareRtc] leaveChannel];
     //ui
     [self dismissViewControllerAnimated:YES completion:nil];
-    if (self.closeRoomBlock) {
+    if (isManual && self.closeRoomBlock) {
         BOOL isEnableAudio = ([self.bottomView getButtonStatus:RoomBottomStatusMic] == ButtonStatusActive) ? NO : YES;
         BOOL isEnableVideo = ([self.bottomView getButtonStatus:RoomBottomStatusCamera] == ButtonStatusActive) ? NO : YES;
         self.closeRoomBlock(isEnableAudio, isEnableVideo);
@@ -235,16 +241,15 @@
     } else if (status == RoomBottomStatusScreen) {
         if (itemButton.status == ButtonStatusNone) {
             __weak __typeof(self) wself = self;
-            [self.screenComponents start:^{
+            [self.screenComponent start:^{
                 [MeetingRTMManager startShareScreen];
                 [wself startScreenWithCamera];
             }];
         } else {
             if (![self.currentRoomModel.screen_shared_uid isEqualToString:self.localVideoSession.uid]) {
-                [[ToastComponents shareToastComponents] showWithMessage:@"屏幕共享发起失败，请提示前一位参会者结束共享"];
+                [[ToastComponent shareToastComponent] showWithMessage:@"屏幕共享发起失败，请提示前一位参会者结束共享"];
             }
         }
-        __weak __typeof(self) wself = self;
         self.videoSpeakerView.clickCloseBlock = ^{
             [[MeetingRTCManager shareRtc] stopScreenSharing];
         };
@@ -285,15 +290,15 @@
                                            block:^(RTMACKModel * _Nonnull ackModel) {
                     if (ackModel.code == 804) {
                         [weakSelf updateRecordTipStatusWithHidden:YES];
-                        [[ToastComponents shareToastComponents] showWithMessage:@"vod配置错误，请检查参数。"];
+                        [[ToastComponent shareToastComponent] showWithMessage:@"vod配置错误，请检查参数。"];
                     }
                     else if (!ackModel.result) {
                         [weakSelf updateRecordTipStatusWithHidden:YES];
-                        [[ToastComponents shareToastComponents] showWithMessage:ackModel.message];
+                        [[ToastComponent shareToastComponent] showWithMessage:ackModel.message];
                     }
                 }];
             } else {
-                [[ToastComponents shareToastComponents] showWithMessage:@"如需录制会议，请提醒主持人开启录制。"];
+                [[ToastComponent shareToastComponent] showWithMessage:@"如需录制会议，请提醒主持人开启录制。"];
             }
         }
     } else {
@@ -468,7 +473,7 @@
             
         }
         if (type.length > 0) {
-            NSDictionary *dic = @{@"type" : type};
+            NSDictionary *dic = @{@"type" : type ?: @""};
             [wself meetingControlChange:dic];
         }
     }];
@@ -494,7 +499,7 @@
         if ([type isEqualToString:@"resume"]) {
             [self loadDataWithMeetingContrller:YES];
         } else if ([type isEqualToString:@"exit"]) {
-            [self hangUp];
+            [self hangUp:YES];
         } else {
             
         }
@@ -553,7 +558,7 @@
     });
 }
 
-- (void)createUIComponents {
+- (void)createUIComponent {
     [self.view addSubview:self.navView];
     [self.view addSubview:self.videoMatrixView];
     [self.view addSubview:self.videoSpeakerView];
@@ -604,16 +609,16 @@
 }
 
 - (void)showEndView {
-    [self.endCompoments showWithStatus:[self.currentRoomModel.host_id isEqualToString:self.localVideoSession.uid] ? MeetingEndStatusHost : MeetingEndStatusNone];
+    [self.endComponent showWithStatus:[self.currentRoomModel.host_id isEqualToString:self.localVideoSession.uid] ? MeetingEndStatusHost : MeetingEndStatusNone];
     __weak __typeof(self) wself = self;
-    self.endCompoments.clickButtonBlock = ^(MeetingButtonStatus status) {
+    self.endComponent.clickButtonBlock = ^(MeetingButtonStatus status) {
         if (status == MeetingButtonStatusEnd ||
             status == MeetingButtonStatusLeave) {
-            [wself hangUp];
+            [wself hangUp:YES];
         } else if (status == MeetingButtonStatusCancel) {
             //cancel
         }
-        wself.endCompoments = nil;
+        wself.endComponent = nil;
     };
 }
 
@@ -642,7 +647,7 @@
         [[MeetingRTCManager shareRtc] enableLocalVideo:NO];
         [MeetingRTMManager turnOffCamera];
         [self.bottomView updateButtonStatus:RoomBottomStatusCamera close:YES];
-        self.screenComponents.isTurnOffCamera = YES;
+        self.screenComponent.isTurnOffCamera = YES;
     }
 }
 
@@ -651,7 +656,7 @@
         if (isAuthorize) {
             itemButton.status = (itemButton.status == ButtonStatusActive) ? ButtonStatusNone : ButtonStatusActive;
             BOOL isEnableAudio = self.localVideoSession.isEnableAudio;
-            [[MeetingRTCManager shareRtc] enableLocalAudio:!isEnableAudio];
+            [[MeetingRTCManager shareRtc] publishStreamAudio:!isEnableAudio];
             [SystemAuthority autoJumpWithAuthorizationStatusWithType:AuthorizationTypeAudio];
             if (itemButton.status == ButtonStatusActive) {
                 //off
@@ -662,7 +667,7 @@
                 self.localVideoSession.isEnableAudio = YES;
             }
         } else {
-            [[ToastComponents shareToastComponents] showWithMessage:@"麦克风权限已关闭，请至设备设置页开启"];
+            [[ToastComponent shareToastComponent] showWithMessage:@"麦克风权限已关闭，请至设备设置页开启"];
         }
     }];
 }
@@ -670,9 +675,9 @@
 - (void)clickRoomBottomStatusCamera:(RoomItemButton *)itemButton {
     [SystemAuthority authorizationStatusWithType:AuthorizationTypeCamera block:^(BOOL isAuthorize) {
         if (isAuthorize) {
-            if (self.screenComponents.isSharing) {
+            if (self.screenComponent.isSharing) {
                 //Screen Sharing
-                [[ToastComponents shareToastComponents] showWithMessage:@"结束共享后方可打开摄像头"];
+                [[ToastComponent shareToastComponent] showWithMessage:@"结束共享后方可打开摄像头"];
             } else {
                 itemButton.status = (itemButton.status == ButtonStatusActive) ? ButtonStatusNone : ButtonStatusActive;
                 self.localVideoSession.isEnableVideo = !self.localVideoSession.isEnableVideo;
@@ -686,7 +691,7 @@
                 }
             }
         } else {
-            [[ToastComponents shareToastComponents] showWithMessage:@"摄像头权限已关闭，请至设备设置页开启"];
+            [[ToastComponent shareToastComponent] showWithMessage:@"摄像头权限已关闭，请至设备设置页开启"];
         }
     }];
 }
@@ -774,11 +779,11 @@
     return _videoSpeakerView;
 }
 
-- (MeetingEndCompoments *)endCompoments {
-    if (!_endCompoments) {
-        _endCompoments = [[MeetingEndCompoments alloc] init];
+- (MeetingEndComponent *)endComponent {
+    if (!_endComponent) {
+        _endComponent = [[MeetingEndComponent alloc] init];
     }
-    return _endCompoments;
+    return _endComponent;
 }
 
 - (NSMutableArray<RoomVideoSession *> *)userDataPool {
@@ -795,11 +800,11 @@
     return _currentStreamDic;
 }
 
-- (MeetingScreenComponents *)screenComponents {
-    if (!_screenComponents) {
-        _screenComponents = [[MeetingScreenComponents alloc] init];
+- (MeetingScreenComponent *)screenComponent {
+    if (!_screenComponent) {
+        _screenComponent = [[MeetingScreenComponent alloc] init];
     }
-    return _screenComponents;
+    return _screenComponent;
 }
 
 - (UIView *)toastView {

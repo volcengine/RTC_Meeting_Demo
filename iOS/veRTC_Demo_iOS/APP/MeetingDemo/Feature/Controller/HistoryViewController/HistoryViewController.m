@@ -2,8 +2,8 @@
 //  HistoryViewController.m
 //  quickstart
 //
-//  Created by bytedance on 2021/3/23.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/3/23.
+//  
 //
 
 #import "HistoryViewController.h"
@@ -36,7 +36,7 @@
         if (model.result) {
             wself.historyTableView.dataLists = recordLists;
         } else {
-            [[ToastComponents shareToastComponents] showWithMessage:model.message];
+            [[ToastComponent shareToastComponent] showWithMessage:model.message];
         }
     }];
 }

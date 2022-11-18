@@ -20,9 +20,10 @@ signals:
   void resizeEvent(QResizeEvent*) override;
   void closeEvent(QCloseEvent*)override;
 
-  private:
+private:
   void stopTest();
- private:
+  void setDefaultProfiles();
+private:
   bool login_ = false;
   LoginControllerWidget* login_controller_widget_;
   LabelWarp * btn_back;

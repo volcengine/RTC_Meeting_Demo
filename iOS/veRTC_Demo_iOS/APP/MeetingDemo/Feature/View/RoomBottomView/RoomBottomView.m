@@ -2,8 +2,8 @@
 //  RoomBottomView.m
 //  quickstart
 //
-//  Created by bytedance on 2021/3/23.
-//  Copyright © 2021 . All rights reserved.
+//  Created by on 2021/3/23.
+//  
 //
 
 #import "RoomBottomView.h"

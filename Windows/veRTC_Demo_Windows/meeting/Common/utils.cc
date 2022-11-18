@@ -5,14 +5,14 @@
 
 namespace utils {
 void setWidgetRoundMask(QWidget* widget, int rx, int ry) {
-  QBitmap bmp(QSize(widget->width() - 2, widget->height() - 2));
-  bmp.fill();
-  QPainter p(&bmp);
-  p.setRenderHint(QPainter::Antialiasing);
-  p.setPen(Qt::NoPen);
-  p.setBrush(Qt::black);
-  p.drawRoundedRect(QRect(1, 1, bmp.width() - 1, bmp.height() - 1), rx, ry);
-  widget->setMask(bmp);
+    QBitmap bmp(QSize(widget->width() - 2, widget->height() - 2));
+    bmp.fill();
+    QPainter p(&bmp);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Qt::black);
+    p.drawRoundedRect(QRect(1, 1, bmp.width() - 1, bmp.height() - 1), rx, ry);
+    widget->setMask(bmp);
 }
 
 static std::vector<std::tuple<VideoResolution, VideoKbpsHint>> g_video_kbps = {
@@ -23,31 +23,30 @@ static std::vector<std::tuple<VideoResolution, VideoKbpsHint>> g_video_kbps = {
     {{1920, 1080}, {800, 3000}}};
 
 VideoKbpsHint getVideoKpbsHit(int w, int h) {
-  VideoKbpsHint hint;
-  for (const auto& iter : g_video_kbps) {
-    if (w == std::get<0>(iter).width && h == std::get<0>(iter).height) {
-      hint.min_kbps = std::get<1>(iter).min_kbps;
-      hint.max_kbps = std::get<1>(iter).max_kbps;
-      break;
+    VideoKbpsHint hint;
+    for (const auto& iter : g_video_kbps) {
+        if (w == std::get<0>(iter).width && h == std::get<0>(iter).height) {
+            hint.min_kbps = std::get<1>(iter).min_kbps;
+            hint.max_kbps = std::get<1>(iter).max_kbps;
+            break;
+        }
     }
-  }
-
-  return hint;
+    return hint;
 }
 
 VideoKbpsHint getVideoKpbsHit(const VideoResolution& resolution) {
-  return getVideoKpbsHit(resolution.width, resolution.height);
+    return getVideoKpbsHit(resolution.width, resolution.height);
 }
 
 int getIdxFromResolution(const VideoResolution& resolution) {
-  int idx = -1;
-  for (const auto& iter : g_video_kbps) {
-    idx++;
-    if (resolution.width == std::get<0>(iter).width &&
-        resolution.height == std::get<0>(iter).height)
-      return idx;
-  }
-  return idx;
+    int idx = -1;
+    for (const auto& iter : g_video_kbps) {
+        idx++;
+        if (resolution.width == std::get<0>(iter).width &&
+            resolution.height == std::get<0>(iter).height)
+            return idx;
+    }
+    return idx;
 }
 
 }  // namespace utils

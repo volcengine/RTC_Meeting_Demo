@@ -2,7 +2,7 @@
 //  GalleryModeLineView.m
 //  SceneRTCDemo
 //
-//  Created by bytedance on 2021/3/14.
+//  Created by on 2021/3/14.
 //
 
 #import "GalleryModeLineView.h"

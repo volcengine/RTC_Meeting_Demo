@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <iostream>
 
-#include "video_widge.h"
+#include "video_widget.h"
 
 struct VideoWidgetInfo {
   int user_logo_font_size;
@@ -20,9 +20,9 @@ static std::unordered_map<int, VideoWidgetInfo> g_video_config = {
     {6, {24, 14, 64, 64, 22}},   {7, {22, 12, 40, 40, 22}},
     {8, {22, 12, 40, 40, 22}},   {9, {22, 12, 40, 40, 22}}};
 
-class HasVideoWidget : public QWidget {
- public:
-  HasVideoWidget(QWidget* parent = nullptr) : QWidget(parent) {
+
+VideoWidget::HasVideoWidget::HasVideoWidget(QWidget* parent /*= nullptr*/) 
+    : QWidget(parent) {
     this->setObjectName("HasVideoWidget");
     video_ = new QWidget(this);
     info_ = new QWidget(this);
@@ -57,32 +57,39 @@ class HasVideoWidget : public QWidget {
         "background:#1D2129; border-radius:2px; padding:2px; color:#4080FF;");
     lbl_share_logo_->setFixedSize(16, 16);
     setShare(false);
-  }
-  ~HasVideoWidget() = default;
+}
 
-  void* getVideoWinID() { return reinterpret_cast<void*>(video_->winId()); }
-  void setVideoUpdateEnabled(bool enabled) {
+void* VideoWidget::HasVideoWidget::getVideoWinID() { 
+    return reinterpret_cast<void*>(video_->winId()); 
+}
+
+void VideoWidget::HasVideoWidget::setVideoUpdateEnabled(bool enabled) {
     video_->setUpdatesEnabled(enabled);
-  }
+}
 
-  void setUserName(const QString& str) {
+void VideoWidget::HasVideoWidget::setUserName(const QString& str) {
     lbl_user_name_->setText(str);
     lbl_user_name_->setVisible(true);
     info_content_->resize(info_content_->layout()->sizeHint());
-  }
+}
 
-  void hideVideo() { video_->hide(); }
-  void showVideo() { video_->show(); }
+void VideoWidget::HasVideoWidget::hideVideo() { 
+    video_->hide(); 
+}
+void VideoWidget::HasVideoWidget::showVideo() { 
+    video_->show(); 
+}
 
-  void setHighLight(bool enabled) {
+void VideoWidget::HasVideoWidget::setHighLight(bool enabled) {
     if (enabled) {
-      setStyleSheet("#HasVideoWidget{border:2px solid #4080FF;}");
-    } else {
-      setStyleSheet("#HasVideoWidget{border:none}");
+        setStyleSheet("#HasVideoWidget{border:2px solid #4080FF;}");
     }
-  }
+    else {
+        setStyleSheet("#HasVideoWidget{border:none}");
+    }
+}
 
-  void setShare(bool enabled) {
+void VideoWidget::HasVideoWidget::setShare(bool enabled) {
     lbl_share_logo_->setVisible(enabled);
     lbl_share_logo_->setStyleSheet(
         "background-image:url(:img/meeting_sharing);"
@@ -90,56 +97,46 @@ class HasVideoWidget : public QWidget {
         "background-repeat:no-repeat;"
         "background-origin:content;");
     info_content_->move(size().width() - info_content_->width() - 2,
-                        height() - 22);
-  }
+        height() - 22);
+}
 
-  void setUserRole(UserRole role) {
+void VideoWidget::HasVideoWidget::setUserRole(UserRole role) {
     user_role_ = role;
     switch (user_role_) {
-      case UserRole::kMe:
+    case UserRole::kMe:
         lbl_user_role_->setText("我");
         lbl_user_role_->setVisible(true);
         break;
-      case UserRole::kBroadCast:
+    case UserRole::kBroadCast:
         lbl_user_role_->setText("主持人");
         lbl_user_role_->setVisible(true);
         break;
-      case UserRole::kAudience:
+    case UserRole::kAudience:
         lbl_user_role_->setVisible(false);
         break;
-      default:
+    default:
         break;
     }
     info_content_->resize(info_content_->layout()->sizeHint());
     info_content_->move(size().width() - info_content_->width() - 2,
-                        height() - 22);
-  }
+        height() - 22);
+}
 
- protected:
-  void resizeEvent(QResizeEvent* e) {
-    info_content_->move(e->size().width() - info_content_->width() -2 ,
-                        height() - 22);
+void VideoWidget::HasVideoWidget::resizeEvent(QResizeEvent* e) {
+    info_content_->move(e->size().width() - info_content_->width() - 2,
+        height() - 22);
     video_->setGeometry(2, 2, e->size().width() - 4, e->size().height() - 4);
-  }
-  void showEvent(QShowEvent*) {
+}
+
+void VideoWidget::HasVideoWidget::showEvent(QShowEvent*) {
     info_content_->move(size().width() - info_content_->width() - 2,
-                        height() - 22);
-  }
-  void moveEvent(QMoveEvent*) {}
+        height() - 22);
+}
 
- private:
-  UserRole user_role_;
-  QWidget* info_content_;
-  QWidget* video_;
-  QWidget* info_;
-  QLabel* lbl_share_logo_;
-  QLabel* lbl_user_name_;
-  QLabel* lbl_user_role_;
-};
+void VideoWidget::HasVideoWidget::moveEvent(QMoveEvent*) {}
 
-class NoVideoWidget : public QWidget {
- public:
-  NoVideoWidget(QWidget* parent = nullptr) : QWidget(parent) {
+VideoWidget::NoVideoWidget::NoVideoWidget(QWidget* parent /*= nullptr*/) 
+    : QWidget(parent) {
     user_role_ = UserRole::kAudience;
     setStyleSheet(
         "background:#272E3B;"
@@ -196,35 +193,35 @@ class NoVideoWidget : public QWidget {
     lbl_user_logo_->setAlignment(Qt::AlignCenter);
     lbl_user_logo_->setStyleSheet(
         "border-radius:20px; background:#4E5969;border: 2px solid #4080FF;");
-  }
-  ~NoVideoWidget() = default;
+}
 
-  void setUserCount(int cnt, bool fixedSize) {
+void VideoWidget::NoVideoWidget::setUserCount(int cnt, bool fixedSize) {
     if (fixedSize) {
-      cnt = 9;
+        cnt = 9;
     }
     fixed_size_ = fixedSize;
     if (higth_light_) {
-      lbl_user_logo_->setStyleSheet(
-          QString(
-              "border-radius:%1px;font-family:Microsoft YaHei; font-size:%2px; "
-              "background:#4e5969;border:2px solid #4080FF;")
-              .arg(g_video_config[cnt].user_logo_width / 2)
-              .arg(g_video_config[cnt].user_logo_font_size));
-    } else {
-      lbl_user_logo_->setStyleSheet(
-          QString("border-radius:%1px;font-family:Microsoft YaHei; font-size:%2px; "
-                  "background:#4e5969;")
-              .arg(g_video_config[cnt].user_logo_width / 2)
-              .arg(g_video_config[cnt].user_logo_font_size));
+        lbl_user_logo_->setStyleSheet(
+            QString(
+                "border-radius:%1px;font-family:Microsoft YaHei; font-size:%2px; "
+                "background:#4e5969;border:2px solid #4080FF;")
+            .arg(g_video_config[cnt].user_logo_width / 2)
+            .arg(g_video_config[cnt].user_logo_font_size));
+    }
+    else {
+        lbl_user_logo_->setStyleSheet(
+            QString("border-radius:%1px;font-family:Microsoft YaHei; font-size:%2px; "
+                "background:#4e5969;")
+            .arg(g_video_config[cnt].user_logo_width / 2)
+            .arg(g_video_config[cnt].user_logo_font_size));
     }
 
     lbl_user_logo_->setFixedSize(g_video_config[cnt].user_logo_width,
-                                 g_video_config[cnt].user_logo_height);
+        g_video_config[cnt].user_logo_height);
     setStyleSheet(QString("background:#272E3B;"
-                          "font-family: \"Microsoft YaHei\";\n"
-                          "font-size: %1px;\n")
-                      .arg(g_video_config[cnt].font_size));
+        "font-family: \"Microsoft YaHei\";\n"
+        "font-size: %1px;\n")
+        .arg(g_video_config[cnt].font_size));
 
     lbl_user_role_->setMinimumHeight(g_video_config[cnt].info_height);
     lbl_user_role_->setMaximumHeight(g_video_config[cnt].info_height);
@@ -233,57 +230,46 @@ class NoVideoWidget : public QWidget {
     lbl_user_name_->setMinimumHeight(g_video_config[cnt].info_height);
     lbl_user_name_->setMaximumHeight(g_video_config[cnt].info_height);
     cnt_ = cnt;
-  }
+}
 
-  void setUserName(const QString& str) {
+void VideoWidget::NoVideoWidget::setUserName(const QString& str) {
     lbl_user_name_->setText(str);
     lbl_user_logo_->setText(str.left(1).toUpper());
     lbl_user_name_->setVisible(true);
-  }
+}
 
-  void setShare(bool enabled) {
+void VideoWidget::NoVideoWidget::setShare(bool enabled) {
     lbl_share_logo_->setVisible(enabled);
     lbl_share_logo_->setStyleSheet(
         "background-image:url(:img/meeting_sharing);"
         "background-position:right;"
         "background-repeat:no-repeat;"
         "background-origin:content;");
-  }
+}
 
-  void setUserRole(UserRole role) {
+void VideoWidget::NoVideoWidget::setUserRole(UserRole role) {
     user_role_ = role;
     switch (user_role_) {
-      case UserRole::kMe:
+    case UserRole::kMe:
         lbl_user_role_->setText("我");
         lbl_user_role_->setVisible(true);
         break;
-      case UserRole::kBroadCast:
+    case UserRole::kBroadCast:
         lbl_user_role_->setText("主持人");
         lbl_user_role_->setVisible(true);
         break;
-      case UserRole::kAudience:
+    case UserRole::kAudience:
         lbl_user_role_->setVisible(false);
         break;
-      default:
+    default:
         break;
     }
-  }
+}
 
-  void setHighLight(bool enabled) {
+void VideoWidget::NoVideoWidget::setHighLight(bool enabled) {
     higth_light_ = enabled;
     setUserCount(cnt_, fixed_size_);
-  }
-
- private:
-  bool higth_light_ = false;
-  int cnt_ = 0;
-  bool fixed_size_ = false;
-  UserRole user_role_;
-  QLabel* lbl_user_logo_;
-  QLabel* lbl_share_logo_;
-  QLabel* lbl_user_name_;
-  QLabel* lbl_user_role_;
-};
+}
 
 VideoWidget::VideoWidget(QWidget* parent)
     : QWidget(parent), role_(UserRole::kAudience) {

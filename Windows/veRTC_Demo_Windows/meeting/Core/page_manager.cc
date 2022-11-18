@@ -48,7 +48,7 @@ void PageManager::init() {
                                     return user.user_id ==
                                         meeting::DataMgr::instance().user_id();
                                 });
-                            if (iter != users.end()) {
+                            if (iter == users.end()) {
                                 return;
                             }
                             iter->is_mic_on = on;
@@ -72,7 +72,7 @@ void PageManager::init() {
                                     return user.user_id ==
                                         meeting::DataMgr::instance().user_id();
                                 });
-                            if (iter != users.end()) {
+                            if (iter == users.end()) {
                                 return;
                             }
                             iter->is_camera_on = on;
@@ -101,20 +101,7 @@ void PageManager::init() {
 				DataMgr::instance().setHighLight(speackers[0].uid);
 			else
 				DataMgr::instance().setHighLight("");
-			for (auto& process : meeting::DataMgr::instance().ref_cache_users()) {
-				process(users);
-			}
-			meeting::DataMgr::instance().ref_cache_users().clear();
-			meeting::DataMgr::instance().setUsers(users);
-			meeting::ForwardEvent::PostEvent(
-				&meeting::Worker::instance(), [users]() mutable {
-					sortUsers(users);
-					meeting::ForwardEvent::PostEvent(
-						&PageManager::instance(), [users] {
-							meeting::DataMgr::instance().setUsers(users);
-							updateData();
-						});
-				});
+            handleCacheUsers();
 		});
 
 	QObject::connect(&MeetingRtcEngineWrap::instance(),
@@ -259,37 +246,38 @@ void PageManager::showLogin(QWidget* parent) {
 }
 
 void PageManager::showTips(QWidget* parent) {
-	QTimer::singleShot(100, []() {
-		QMessageBox::information(nullptr, "meeting tips",
-			"本产品仅用于功能体验，单次会议时长不超过十分钟",
-			QMessageBox::Ok);
-		});
+    QTimer::singleShot(100, []() {
+        QMessageBox::information(nullptr, "meeting tips",
+            "本产品仅用于功能体验，单次会议时长不超过十分钟",
+            QMessageBox::Ok);
+        });
 }
 
 void PageManager::showSetting(QWidget* parent) {
-	auto dlg = std::unique_ptr<MeetingSetting>(new MeetingSetting(parent));
-	dlg->initView();
-	if (dlg->exec() == QDialog::Accepted) {
-		auto setting = meeting::DataMgr::instance().setting();
-		MeetingRtcEngineWrap::setAudioInputDevice(setting.mic_idx);
-		MeetingRtcEngineWrap::setVideoCaptureDevice(setting.camera_idx);
-		MeetingRtcEngineWrap::setVideoProfiles(setting.camera);
-		MeetingRtcEngineWrap::setScreenProfiles(setting.screen);
-		instance().main_page_->setInfoVisible(setting.enable_show_info);
-	}
+    auto dlg = std::unique_ptr<MeetingSetting>(new MeetingSetting(parent));
+    dlg->initView();
+    if (dlg->exec() == QDialog::Accepted) {
+        auto setting = meeting::DataMgr::instance().setting();
+        MeetingRtcEngineWrap::setAudioInputDevice(setting.mic_idx);
+        MeetingRtcEngineWrap::setVideoCaptureDevice(setting.camera_idx);
+        MeetingRtcEngineWrap::setVideoProfiles(setting.camera);
+        MeetingRtcEngineWrap::setScreenProfiles(setting.screen);
+        instance().main_page_->setInfoVisible(setting.enable_show_info);
+    }
 }
 
 void PageManager::showShareWidget(QWidget* parent) {
-	auto dlg = std::unique_ptr<ShareScreenWidget>(new ShareScreenWidget(parent));
-	if (dlg->exec() == QDialog::Accepted) {
-		meeting::DataMgr::instance().setShareScreen(true);
-		unSetGlobalBarEvent(instance().main_page_.get());
-		hideRoom();
-		instance().button_bar_->setMoveEnabled(true);
-	}
-	else {
-		instance().button_bar_->setShareState(PushButtonWarp::kNormal);
-	}
+    auto dlg = std::unique_ptr<ShareScreenWidget>(new ShareScreenWidget(parent));
+    if (dlg->exec() == QDialog::Accepted) {
+        meeting::DataMgr::instance().setShareScreen(true);
+        unSetGlobalBarEvent(instance().main_page_.get());
+        hideRoom();
+        instance().button_bar_->setMoveEnabled(true);
+    } else {
+        if (!meeting::DataMgr::instance().share_screen()) {
+            instance().button_bar_->setShareState(PushButtonWarp::kNormal);
+        }
+    }
 }
 
 void PageManager::showUserListWidget(QWidget* parent) {
@@ -302,13 +290,13 @@ void PageManager::hideUserListWidget() {
 }
 
 int PageManager::showCallExpDlg(QWidget* parent) {
-	auto quit_dlg = std::unique_ptr<MeetingQuitDlg>(new MeetingQuitDlg());
-	if (parent) {
-		quit_dlg->move(QPoint(
-			parent->pos().x() + (parent->width() - quit_dlg->width()) / 2,
-			parent->pos().y() + ((parent->height() - quit_dlg->height()) / 2)));
-	}
-	return quit_dlg->exec();
+    auto quit_dlg = std::unique_ptr<MeetingQuitDlg>(new MeetingQuitDlg());
+    if (parent) {
+        quit_dlg->move(QPoint(
+            parent->pos().x() + (parent->width() - quit_dlg->width()) / 2,
+            parent->pos().y() + ((parent->height() - quit_dlg->height()) / 2)));
+    }
+    return quit_dlg->exec();
 }
 
 void PageManager::setLocalVideoWidget(const User& user, int idx, int cnt) {
@@ -383,12 +371,12 @@ void PageManager::setRemoteScrrenVideoWidget(const User& user) {
 }
 
 void PageManager::initRoom() {
-	meeting::DataMgr::instance().setConnect(true);
-	meetingNotify();
-	instance().button_bar_->init();
-	instance().main_page_->init();
-	showRoom();
-	updateData();
+    meeting::DataMgr::instance().setConnect(true);
+    meetingNotify();
+    instance().button_bar_->init();
+    instance().main_page_->init();
+    showRoom();
+    updateData();
 }
 
 void PageManager::showRoom() {
@@ -418,11 +406,11 @@ void PageManager::hideGlobalBar() { instance().button_bar_->hide(); }
 void PageManager::hideRoom() { instance().main_page_->hide(); }
 
 void PageManager::setGlobalBarEvent(QWidget* listener) {
-  instance().button_bar_->setEventFilter(listener);
+    instance().button_bar_->setEventFilter(listener);
 }
 
 void PageManager::unSetGlobalBarEvent(QWidget* listener) {
-  instance().button_bar_->unSetEventFilter(listener);
+    instance().button_bar_->unSetEventFilter(listener);
 }
 
 std::vector<std::shared_ptr<VideoWidget>> PageManager::getVideoList() {
@@ -492,6 +480,24 @@ void PageManager::updateData() {
   instance().updating = false;
 }
 
+void PageManager::handleCacheUsers() {
+    auto users = meeting::DataMgr::instance().users();
+    for (auto& process : meeting::DataMgr::instance().ref_cache_users()) {
+        process(users);
+    }
+    meeting::DataMgr::instance().ref_cache_users().clear();
+    meeting::DataMgr::instance().setUsers(users);
+    meeting::ForwardEvent::PostEvent(
+        &meeting::Worker::instance(), [users]() mutable {
+            sortUsers(users);
+            meeting::ForwardEvent::PostEvent(
+                &PageManager::instance(), [users] {
+                    meeting::DataMgr::instance().setUsers(users);
+                    updateData();
+            });
+        });
+}
+
 void PageManager::sortUsers(std::vector<User>& users) {
   std::chrono::system_clock::time_point begin =
       std::chrono::system_clock::now();
@@ -538,11 +544,6 @@ void PageManager::sortUsers(std::vector<User>& users) {
       }
     }
   });
-  // std::cout << "sorttime:"
-  //          << std::chrono::duration_cast<std::chrono::microseconds>(
-  //                 std::chrono::system_clock::now() - begin)
-  //                 .count()
-  //          << std::endl;
 }
 
 void PageManager::meetingNotify() {
@@ -590,6 +591,7 @@ void PageManager::meetingNotify() {
         users.erase(iter);
       }
     });
+    handleCacheUsers();
   });
 
   MeetingNotify::instance().onMeetingEnd([](int) {
@@ -636,36 +638,37 @@ void PageManager::meetingNotify() {
 
   MeetingNotify::instance().onShareScreenStatusChanged(
       [](const std::string& uid, bool status) {
-        auto& cache = meeting::DataMgr::instance().ref_cache_users();
-        cache.push_back([=](std::vector<User>& users) {
-          if (uid == meeting::DataMgr::instance().user_id()) return;
-          for (size_t i = 0; i < users.size(); i++) {
-            if (users[i].user_id == uid) {
-              PageManager::instance().main_page_->changeViewMode(
-                  status ? MainPage::kSpeakerPage : MainPage::kNormalPage);
-              users[i].is_sharing = status;
-              auto r = meeting::DataMgr::instance().room();
-              r.screen_shared_uid = status ? uid : "";
-              meeting::DataMgr::instance().setRoom(std::move(r));
-              setRemoteScrrenVideoWidget(users[i]);
-              meeting::DataMgr::instance().setShareScreen(status);
-              if (status) {
-                instance().button_bar_->setShareState(PushButtonWarp::kSelect);
-              } else {
-                instance().button_bar_->setShareState(PushButtonWarp::kNormal);
-                MeetingRtcEngineWrap::unSubscribeVideoStream(uid, false);
+          auto& cache = meeting::DataMgr::instance().ref_cache_users();
+          cache.push_back([=](std::vector<User>& users) {
+              if (uid == meeting::DataMgr::instance().user_id()) return;
+              for (size_t i = 0; i < users.size(); i++) {
+                  if (users[i].user_id == uid) {
+                      PageManager::instance().main_page_->changeViewMode(
+                          status ? MainPage::kSpeakerPage : MainPage::kNormalPage);
+                      users[i].is_sharing = status;
+                      auto r = meeting::DataMgr::instance().room();
+                      r.screen_shared_uid = status ? uid : "";
+                      meeting::DataMgr::instance().setRoom(std::move(r));
+                      setRemoteScrrenVideoWidget(users[i]);
+                      meeting::DataMgr::instance().setShareScreen(status);
+                      if (status) {
+                          instance().button_bar_->setShareState(PushButtonWarp::kSelect);
+                      }
+                      else {
+                          instance().button_bar_->setShareState(PushButtonWarp::kNormal);
+                          MeetingRtcEngineWrap::unSubscribeVideoStream(uid, false);
+                      }
+                      break;
+                  }
               }
-              break;
-            }
-          }
-        });
+              });
       });
 
   MeetingNotify::instance().onMuteAll([](int) {
     auto& cache = meeting::DataMgr::instance().ref_cache_users();
     cache.push_back([=](std::vector<User>& users) {
       if (meeting::DataMgr::instance().local_role() !=
-          MeetingRole::kBroadCast) {
+          MeetingRole::kBroadCast && !meeting::DataMgr::instance().mute_audio()) {
         WarningTips::showTips(QString("你已被主持人静音"), TipsType::kWarning,
                               currentWidget(), 2000);
         for (auto iter = users.begin(); iter != users.end(); iter++)
@@ -678,7 +681,8 @@ void PageManager::meetingNotify() {
   MeetingNotify::instance().onMuteUser([](const std::string& user_id) {
     auto& cache = meeting::DataMgr::instance().ref_cache_users();
     cache.push_back([=](std::vector<User>& users) {
-      if (user_id == meeting::DataMgr::instance().user_id()) {
+      if (user_id == meeting::DataMgr::instance().user_id() 
+          && !meeting::DataMgr::instance().mute_audio()) {
         WarningTips::showTips(QString("你已被主持人静音"), TipsType::kWarning,
                               currentWidget(), 2000);
         auto iter = std::find_if(

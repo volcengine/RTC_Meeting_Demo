@@ -50,6 +50,4 @@ class MeetingNotify {
   std::function<void(const std::string&)> onAskingCameraOn_;
   std::function<void(int)> onInvalidToken_;
   std::function<void(int)> onUserKickedOff_;
-  std::function<void(int)> onWebsocketConnected_;
-  std::function<void(int)> onWebsocketConnecting_;
 };

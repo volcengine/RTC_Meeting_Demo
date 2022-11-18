@@ -1,7 +1,7 @@
 <RCC>
     <qresource prefix="/img">
         <file alias="error">image/error.png</file>
-		<file alias="metting">image/metting.png</file>
+		<file alias="meeting">image/meeting.png</file>
         <file alias="meeting_camera">image/meeting_camera.png</file>
         <file alias="meeting_mic">image/meeting_mic.png</file>
         <file alias="meeting_setting">image/meeting_setting.png</file>

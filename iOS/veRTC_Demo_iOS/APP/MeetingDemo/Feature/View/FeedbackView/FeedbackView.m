@@ -39,7 +39,7 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        [self initFeedBackUIComponents];
+        [self initFeedBackUIComponent];
         [self dataRestoration];
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector (keyboardDidShowNotification:) name:UIKeyboardWillShowNotification object:nil];
@@ -170,7 +170,7 @@
     [self.collectOpinionsTextField resignFirstResponder];
 }
 
-- (void)initFeedBackUIComponents {
+- (void)initFeedBackUIComponent {
     UIView *keyView = [UIApplication sharedApplication].keyWindow.rootViewController.view;
     
     self.maskView = [[UIView alloc] init];

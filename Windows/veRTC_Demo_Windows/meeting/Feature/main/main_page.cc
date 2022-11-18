@@ -8,7 +8,7 @@
 
 #include "meeting/Core/meeting_rtc_wrap.h"
 #include "meeting/common/meeting_quit_dlg.h"
-#include "meeting/common/video_widge.h"
+#include "meeting/Common/video_widget.h"
 #include "meeting/core/page_manager.h"
 #include "meeting/feature/normal/normal_widget.h"
 #include "meeting/feature/speech/speech_widget.h"
@@ -27,6 +27,7 @@ static constexpr char *kQss =
 
 MainPage::MainPage(QWidget *parent) : QWidget(parent), ui(new Ui::MainPage) {
   ui->setupUi(this);
+  resize(QSize(960, 700));
   tick_count_ = 0;
   ui->stackedWidget->addWidget(new NormalWidget(this));
   ui->stackedWidget->addWidget(new SpeechWidget(this));
@@ -103,28 +104,29 @@ void MainPage::showWidget(int cnt) {
 }
 
 void MainPage::init() {
-  tick_count_ = QDateTime::currentMSecsSinceEpoch() * 1000000 -
-                meeting::DataMgr::instance().room().meeting_start_time;
-  tick_count_ /= 1000000000;
-  ui->lbl_user->setText(meeting::DataMgr::instance().user_name().c_str());
-  ui->lbl_user_logo->setText(ui->lbl_user->text().left(1).toUpper());
-  ui->lbl_room_id->setText(meeting::DataMgr::instance().room_id().c_str());
-  ui->lbl_time->setText("00:00");
-  main_timer_->start(1000);
-  setRecVisiable(meeting::DataMgr::instance().room().is_recording);
-  static_cast<SpeechWidget *>(ui->stackedWidget->widget(kSpeakerPage))->init();
-  static_cast<NormalWidget *>(ui->stackedWidget->widget(kNormalPage))->init();
-  if (meeting::DataMgr::instance().share_screen()) {
-    changeViewMode(MainPage::kSpeakerPage);
-  } else {
-    changeViewMode(MainPage::kNormalPage);
-  }
+    tick_count_ = QDateTime::currentMSecsSinceEpoch() * 1000000 -
+        meeting::DataMgr::instance().room().meeting_start_time;
+    tick_count_ /= 1000000000;
+    ui->lbl_user->setText(meeting::DataMgr::instance().user_name().c_str());
+    ui->lbl_user_logo->setText(ui->lbl_user->text().left(1).toUpper());
+    ui->lbl_room_id->setText(meeting::DataMgr::instance().room_id().c_str());
+    ui->lbl_time->setText("00:00");
+    main_timer_->start(1000);
+    setRecVisiable(meeting::DataMgr::instance().room().is_recording);
+    static_cast<SpeechWidget*>(ui->stackedWidget->widget(kSpeakerPage))->init();
+    static_cast<NormalWidget*>(ui->stackedWidget->widget(kNormalPage))->init();
+    if (meeting::DataMgr::instance().share_screen()) {
+        changeViewMode(MainPage::kSpeakerPage);
+    } else {
+        changeViewMode(MainPage::kNormalPage);
+    }
 
-  froce_close_ = false;
-  expand_on_ = true;
-  ui->btn_visible_list->setStyleSheet(QString(kQss).arg(":img/meeting/up"));
-  ui->btn_visible_list->setText("隐藏列表");
-  info_view_->updateData();
+    froce_close_ = false;
+    expand_on_ = true;
+    ui->btn_visible_list->setStyleSheet(QString(kQss).arg(":img/meeting/up"));
+    ui->btn_visible_list->setText("隐藏列表");
+
+    info_view_->updateData();
 }
 
 void MainPage::setListButtonVisiable(bool enabled) {

@@ -136,24 +136,24 @@ GlobalButtonBar::GlobalButtonBar(QWidget *parent)
     ui->btn_user_list->setStateMapQss(user_list_qss_map);
 
     connect(ui->btn_share, &QPushButton::clicked, this, [=] {
-		if (ui->btn_share->state() == PushButtonWarp::kNormal) {
-			ui->btn_share->setState(PushButtonWarp::kSelect);
-			emit sigShareButtonClicked(true);
-		}
-		else {
-			auto cur_share_uid =
-				meeting::DataMgr::instance().room().screen_shared_uid;
-			if (!cur_share_uid.empty() &&
-				cur_share_uid != meeting::DataMgr::instance().user_id()) {
-				WarningTips::showTips("屏幕共享发起失败，请提示前一位参会者结束共享",
-					TipsType::kWarning,
-					meeting::PageManager::currentWidget(), 2000);
-				return;
-			}
-			ui->btn_share->setState(PushButtonWarp::kNormal);
-			emit sigShareButtonClicked(false);
-		}
-    });
+        if (ui->btn_share->state() == PushButtonWarp::kNormal) {
+            ui->btn_share->setState(PushButtonWarp::kSelect);
+            emit sigShareButtonClicked(true);
+        }
+        else {
+            auto cur_share_uid =
+                meeting::DataMgr::instance().room().screen_shared_uid;
+            if (!cur_share_uid.empty() &&
+                cur_share_uid != meeting::DataMgr::instance().user_id()) {
+                WarningTips::showTips("屏幕共享发起失败，请提示前一位参会者结束共享",
+                    TipsType::kWarning,
+                    meeting::PageManager::currentWidget(), 2000);
+                return;
+            }
+            ui->btn_share->setState(PushButtonWarp::kNormal);
+            emit sigShareButtonClicked(false);
+        }
+        });
     connect(ui->btn_user_list, &QPushButton::clicked, this, [=] {
 		if (meeting::DataMgr::instance().room().screen_shared_uid ==
 			meeting::DataMgr::instance().user_id()) {
@@ -281,33 +281,33 @@ GlobalButtonBar::GlobalButtonBar(QWidget *parent)
 GlobalButtonBar::~GlobalButtonBar() { delete ui; }
 
 void GlobalButtonBar::init() {
-  ui->btn_camera->setState(!meeting::DataMgr::instance().mute_video()
-                               ? PushButtonWarp::kNormal
-                               : PushButtonWarp::kSelect);
+    ui->btn_camera->setState(!meeting::DataMgr::instance().mute_video()
+        ? PushButtonWarp::kNormal
+        : PushButtonWarp::kSelect);
 
-  ui->btn_mic->setState(!meeting::DataMgr::instance().mute_audio()
-                            ? PushButtonWarp::kNormal
-                            : PushButtonWarp::kSelect);
-  ui->btn_hang->setState(PushButtonWarp::kNormal);
-  ui->btn_record->setState(meeting::DataMgr::instance().room().is_recording
-                               ? PushButtonWarp::kSelect
-                               : PushButtonWarp::kNormal);
-  ui->btn_setting->setState(PushButtonWarp::kNormal);
-  ui->btn_share->setState(PushButtonWarp::kNormal);
-  ui->btn_user_list->setState(PushButtonWarp::kNormal);
+    ui->btn_mic->setState(!meeting::DataMgr::instance().mute_audio()
+        ? PushButtonWarp::kNormal
+        : PushButtonWarp::kSelect);
+    ui->btn_hang->setState(PushButtonWarp::kNormal);
+    ui->btn_record->setState(meeting::DataMgr::instance().room().is_recording
+        ? PushButtonWarp::kSelect
+        : PushButtonWarp::kNormal);
+    ui->btn_setting->setState(PushButtonWarp::kNormal);
+    ui->btn_share->setState(PushButtonWarp::kNormal);
+    ui->btn_user_list->setState(PushButtonWarp::kNormal);
 }
 
 void GlobalButtonBar::setForceMic(bool mute) {
-  meeting::DataMgr::instance().setMuteAudio(!mute);
-  emit ui->btn_mic->clicked();
+    meeting::DataMgr::instance().setMuteAudio(!mute);
+    emit ui->btn_mic->clicked();
 }
 
 void GlobalButtonBar::setMic(bool mute) {
-  meeting::DataMgr::instance().setMuteAudio(mute);
-  MeetingRtcEngineWrap::muteLocalAudio(mute);
-  MeetingRtcEngineWrap::enableLocalAudio(!mute);
-  ui->btn_mic->setState(!mute ? PushButtonWarp::kNormal
-                             : PushButtonWarp::kSelect);
+    meeting::DataMgr::instance().setMuteAudio(mute);
+    MeetingRtcEngineWrap::muteLocalAudio(mute);
+    MeetingRtcEngineWrap::enableLocalAudio(!mute);
+    ui->btn_mic->setState(!mute ? PushButtonWarp::kNormal
+        : PushButtonWarp::kSelect);
 }
 
 void GlobalButtonBar::setMoveEnabled(bool enabled) { 
@@ -315,66 +315,66 @@ void GlobalButtonBar::setMoveEnabled(bool enabled) {
 }
 
 void GlobalButtonBar::setForceCamera(bool mute) {
-  meeting::DataMgr::instance().setMuteVideo(!mute);
-  emit ui->btn_camera->clicked();
+    meeting::DataMgr::instance().setMuteVideo(!mute);
+    emit ui->btn_camera->clicked();
 }
 
 void GlobalButtonBar::setShareState(PushButtonWarp::PushButtonState state) {
-  ui->btn_share->setState(state);
+    ui->btn_share->setState(state);
 }
 
 void GlobalButtonBar::setUserListState(PushButtonWarp::PushButtonState state) {
-  ui->btn_user_list->setState(state);
+    ui->btn_user_list->setState(state);
 }
 
 void GlobalButtonBar::setRecordingState(PushButtonWarp::PushButtonState state) {
-  ui->btn_record->setState(state);
+    ui->btn_record->setState(state);
 }
 
 void GlobalButtonBar::setEventFilter(QWidget *w) {
-  w->installEventFilter(this);
-  listener_ = w;
+    w->installEventFilter(this);
+    listener_ = w;
 }
 
 void GlobalButtonBar::unSetEventFilter(QWidget *w) {
-  w->removeEventFilter(this);
+    w->removeEventFilter(this);
 }
 
 void GlobalButtonBar::mousePressEvent(QMouseEvent *e) {
-  if (e->button() == Qt::LeftButton) {
-    point_ = e->pos();
-  }
+    if (e->button() == Qt::LeftButton) {
+        point_ = e->pos();
+    }
 }
 
 void GlobalButtonBar::mouseMoveEvent(QMouseEvent *e) {
-  QPoint newLeftPos;
-  newLeftPos = e->globalPos() - point_;
-  if (move_enabled_) this->move(newLeftPos);
+    QPoint newLeftPos;
+    newLeftPos = e->globalPos() - point_;
+    if (move_enabled_) this->move(newLeftPos);
 }
 
 void GlobalButtonBar::paintEvent(QPaintEvent *e) {
-  QPainter p(this);
-  p.setRenderHint(QPainter::Antialiasing);
-  p.setBrush(QBrush(QColor(0x1d, 0x21, 0x29)));
-  p.setPen(Qt::NoPen);
-  p.drawRoundedRect(rect(), 30, 30);
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setBrush(QBrush(QColor(0x1d, 0x21, 0x29)));
+    p.setPen(Qt::NoPen);
+    p.drawRoundedRect(rect(), 30, 30);
 }
 
 bool GlobalButtonBar::eventFilter(QObject *watched, QEvent *e) {
-  auto w = static_cast<QWidget *>(watched);
-  if (listener_ != w) return false;
-  switch (e->type()) {
+    auto w = static_cast<QWidget*>(watched);
+    if (listener_ != w) return false;
+    switch (e->type()) {
     case QEvent::Show:
-      show();
+        show();
     case QEvent::Resize:
     case QEvent::Move: {
-      QPoint p = w->pos() + QPoint((w->frameGeometry().width() - width()) / 2,
-                                   w->frameGeometry().height() - height() - 8);
-      this->move(p);
+        QPoint p = w->pos() + QPoint((w->frameGeometry().width() - width()) / 2,
+            w->frameGeometry().height() - height() - 8);
+        this->move(p);
     } break;
     case QEvent::Hide:
-      hide();
-      break;
-  }
-  return false;
+        hide();
+        break;
+    }
+    return false;
 }

@@ -34,13 +34,13 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor blackColor];
-    [self initUIComponents];
+    [self initUIComponent];
     [self authorizationStatusMicAndCamera];
     
     NSString *sdkVer = [MeetingRTCManager getSdkVersion];
     NSString *appVer = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
     self.verLabel.text = [NSString stringWithFormat:@"App版本 v%@ / SDK版本 v%@", appVer, sdkVer];
-    self.userIdTextField.text = [LocalUserComponents userModel].name;
+    self.userIdTextField.text = [LocalUserComponent userModel].name;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardDidShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardDidHide:) name:UIKeyboardWillHideNotification object:nil];
@@ -110,17 +110,17 @@
     if (self.userIdTextField.text.length <= 0) {
         return;
     }
-    BOOL checkRoomId = ![LocalUserComponents isMatchRoomID:self.roomIdTextField.text];
+    BOOL checkRoomId = ![LocalUserComponent isMatchRoomID:self.roomIdTextField.text];
     if (checkRoomId) {
         return;
     }
     
-    BOOL checkUserName = ![LocalUserComponents isMatchUserName:self.userIdTextField.text];
+    BOOL checkUserName = ![LocalUserComponent isMatchUserName:self.userIdTextField.text];
     if (checkUserName) {
         return;
     }
     
-    __block RoomVideoSession *roomVideoSession = [[RoomVideoSession alloc] initWithUid:[LocalUserComponents userModel].uid];
+    __block RoomVideoSession *roomVideoSession = [[RoomVideoSession alloc] initWithUid:[LocalUserComponent userModel].uid];
     roomVideoSession.name = self.userIdTextField.text;
     roomVideoSession.appid = self.currentAppid;
     roomVideoSession.roomId = self.roomIdTextField.text;
@@ -130,9 +130,9 @@
     roomVideoSession.isHost = NO;
     roomVideoSession.isScreen = NO;
     
-    [PublicParameterCompoments share].roomId = roomVideoSession.roomId;
+    [PublicParameterComponent share].roomId = roomVideoSession.roomId;
     
-    sender.userInteractionEnabled = NO;
+    [[ToastComponent shareToastComponent] showLoading];
     __weak __typeof(self) wself = self;
     [MeetingRTMManager joinMeeting:roomVideoSession block:^(NSString * _Nonnull token, NSArray<RoomVideoSession *> * _Nonnull userLists, RTMACKModel * _Nonnull model) {
         if (model.result) {
@@ -143,7 +143,7 @@
             alertModel.title = @"确定";
             [[AlertActionManager shareAlertActionManager] showWithMessage:model.message actions:@[alertModel]];
         }
-        sender.userInteractionEnabled = YES;
+        [[ToastComponent shareToastComponent] dismiss];
     }];
 }
 
@@ -225,10 +225,10 @@
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(dismissErrorLabel:) object:textField];
     BOOL isIllegal = NO;
     if (self.userIdTextField == textField) {
-        isIllegal = ![LocalUserComponents isMatchUserName:textField.text];;
+        isIllegal = ![LocalUserComponent isMatchUserName:textField.text];;
     }
     if (self.roomIdTextField == textField) {
-        isIllegal = ![LocalUserComponents isMatchRoomID:textField.text];
+        isIllegal = ![LocalUserComponent isMatchRoomID:textField.text];
     }
     if (isIllegal || isExceedMaximLength) {
         if (isIllegal) {
@@ -319,7 +319,7 @@
     }];
 }
 
-- (void)initUIComponents {
+- (void)initUIComponent {
     [self.view addSubview:self.videoView];
     [self.videoView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(self.view);
@@ -584,7 +584,7 @@
 
 - (void)dealloc {
     [[MeetingRTCManager shareRtc] disconnect];
-    [PublicParameterCompoments clear];
+    [PublicParameterComponent clear];
 }
 
 @end

@@ -1,9 +1,9 @@
 #import "UserListCell.h"
 #import "MeetingRTCManager.h"
-#import "MeetingAvatarCompoments.h"
+#import "MeetingAvatarComponent.h"
 
 @interface UserListCell ()
-@property (nonatomic, strong) MeetingAvatarCompoments *avatarView;
+@property (nonatomic, strong) MeetingAvatarComponent *avatarView;
 @property (nonatomic, strong) UILabel *userIDLabel;
 @property (nonatomic, strong) BaseButton *enableAudioBtn;
 @property (nonatomic, strong) BaseButton *enableVideoBtn;
@@ -23,7 +23,7 @@
         self.backgroundColor = [UIColor clearColor];
         self.contentView.backgroundColor = [UIColor clearColor];
         
-        [self createUIComponents];
+        [self createUIComponent];
     }
     return self;
 }
@@ -79,7 +79,7 @@
 
 #pragma mark - Private Action
 
-- (void)createUIComponents {
+- (void)createUIComponent {
     [self.contentView addSubview:self.avatarView];
     [self.avatarView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.size.mas_equalTo(CGSizeMake(40, 40));
@@ -162,9 +162,9 @@
     return _enableVideoBtn;
 }
 
-- (MeetingAvatarCompoments *)avatarView {
+- (MeetingAvatarComponent *)avatarView {
     if (!_avatarView) {
-        _avatarView = [[MeetingAvatarCompoments alloc] init];
+        _avatarView = [[MeetingAvatarComponent alloc] init];
         _avatarView.fontSize = 20;
         _avatarView.layer.masksToBounds = YES;
         _avatarView.layer.cornerRadius = 20;

@@ -13,6 +13,7 @@
 
 MeetingLoginWidget::MeetingLoginWidget(QWidget* parent) : QWidget(parent) {
   ui.setupUi(this);
+  resize(QSize(960,700));
   btn_back = new LabelWarp(this);
   btn_back->move(32, 66);
   btn_back->setFixedSize(48, 48);
@@ -36,21 +37,21 @@ MeetingLoginWidget::MeetingLoginWidget(QWidget* parent) : QWidget(parent) {
             vrd::MeetingSession::instance().changeUserName(
                 meeting::DataMgr::instance().user_name(), [=](int code) {
                     if (code != 200) {
-						if (code == 430) {
-							WarningTips::showTips(
-								"输入内容包含敏感词，请重新输入", TipsType::kWarning,
-								meeting::PageManager::currentWidget(), 2000);
-						}
-						else if (code == 500) {
-							WarningTips::showTips(
-								"系统繁忙，请稍后重试", TipsType::kWarning,
-								meeting::PageManager::currentWidget(), 2000);
-						}
-						else {
-							WarningTips::showTips(
-								"修改昵称失败, 请换个昵称重试", TipsType::kWarning,
-								meeting::PageManager::currentWidget(), 2000);
-						}
+                        if (code == 430) {
+                            WarningTips::showTips(
+                                "输入内容包含敏感词，请重新输入", TipsType::kWarning,
+                                meeting::PageManager::currentWidget(), 2000);
+                        }
+                        else if (code == 500) {
+                            WarningTips::showTips(
+                                "系统繁忙，请稍后重试", TipsType::kWarning,
+                                meeting::PageManager::currentWidget(), 2000);
+                        }
+                        else {
+                            WarningTips::showTips(
+                                "修改昵称失败, 请换个昵称重试", TipsType::kWarning,
+                                meeting::PageManager::currentWidget(), 2000);
+                        }
                     }
                     login_ = false;
                     return;
@@ -62,33 +63,36 @@ MeetingLoginWidget::MeetingLoginWidget(QWidget* parent) : QWidget(parent) {
                 !meeting::DataMgr::instance().mute_audio(),
                 !meeting::DataMgr::instance().mute_video(), [=](int code) {
                     if (code == 200) {
-						if (meeting::DataMgr::instance().room().host_uid ==
-							meeting::DataMgr::instance().user_id()) {
-							meeting::DataMgr::instance().setLocalRole(
-								MeetingRole::kBroadCast);
-						}
-						else {
-							meeting::DataMgr::instance().setLocalRole(
-								MeetingRole::kAudience);
-						}
+                        if (meeting::DataMgr::instance().room().host_uid ==
+                            meeting::DataMgr::instance().user_id()) {
+                            meeting::DataMgr::instance().setLocalRole(
+                                MeetingRole::kBroadCast);
+                        }
+                        else {
+                            meeting::DataMgr::instance().setLocalRole(
+                                MeetingRole::kAudience);
+                        }
                         vrd::MeetingSession::instance().setRoomId(meeting::DataMgr::instance().room_id());
-						auto users = meeting::DataMgr::instance().users();
-						auto iter = std::find_if(
-							users.begin(), users.end(),
-							[](const User& usr) { return usr.is_sharing; });
-						meeting::DataMgr::instance().setShareScreen(iter !=
-							users.end());
-						MeetingRtcEngineWrap::login(
-							meeting::DataMgr::instance().room_id(),
-							meeting::DataMgr::instance().user_id(),
-							meeting::DataMgr::instance().token());
-						stopTest();
-						QTimer::singleShot(100, [=] { hide(); });
-						meeting::PageManager::initRoom();
-						login_ = false;
+                        auto users = meeting::DataMgr::instance().users();
+                        auto iter = std::find_if(
+                            users.begin(), users.end(),
+                            [](const User& usr) { return usr.is_sharing; });
+                        meeting::DataMgr::instance().setShareScreen(iter !=
+                            users.end());
+                        setDefaultProfiles();
+                        MeetingRtcEngineWrap::login(
+                            meeting::DataMgr::instance().room_id(),
+                            meeting::DataMgr::instance().user_id(),
+                            meeting::DataMgr::instance().token());
+
+                        stopTest();
+                        QTimer::singleShot(100, [=] { hide(); });
+                        meeting::PageManager::initRoom();
+
+                        login_ = false;
                     }
                 });
-            });
+        });
 
   connect(login_controller_widget_, &LoginControllerWidget::sigAudioClicked,
           this, [=] {
@@ -175,4 +179,11 @@ void MeetingLoginWidget::stopTest() {
 	MeetingRtcEngineWrap::setupLocalView(
 		nullptr, bytertc::RenderMode::kRenderModeHidden, "local");
 	ui.login_page->setUpdatesEnabled(true);
+}
+
+void MeetingLoginWidget::setDefaultProfiles() {
+    auto setting = meeting::DataMgr::instance().setting();
+    MeetingRtcEngineWrap::setVideoProfiles(setting.camera);
+    MeetingRtcEngineWrap::setScreenProfiles(setting.screen);
+    MeetingRtcEngineWrap::setLocalMirrorMode(bytertc::MirrorType::kMirrorTypeRenderAndEncoder);
 }

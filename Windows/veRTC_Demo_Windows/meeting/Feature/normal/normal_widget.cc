@@ -14,7 +14,9 @@ NormalWidget::NormalWidget(QWidget *parent)
   setLayout(lay);
 }
 
-NormalWidget::~NormalWidget() { delete ui; }
+NormalWidget::~NormalWidget() { 
+    delete ui; 
+}
 
 void NormalWidget::updateData() {}
 

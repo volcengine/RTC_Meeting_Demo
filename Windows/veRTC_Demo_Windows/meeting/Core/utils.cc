@@ -1,7 +1,5 @@
 #include "meeting/Core/utils.h"
 
-#include <QFontMetrics>
-
 namespace utils {
 
     std::string getOsInfo() {
@@ -25,15 +23,6 @@ namespace utils {
   std::ostringstream res;
   res << os_name << " " << osver.dwMajorVersion << '.' << osver.dwMinorVersion;
   return res.str();
-}
-
-QString elideText(const QFont& font, const QString& str, int width) {
-  QFontMetrics mf(font);
-  QString res = str;
-  if (mf.horizontalAdvance(str) > width) {
-    res = mf.elidedText(str, Qt::TextElideMode::ElideRight, width);
-  }
-  return res;
 }
 
 }  // namespace utils

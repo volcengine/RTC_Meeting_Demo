@@ -18,14 +18,14 @@
     if (self) {
         self.backgroundColor = [UIColor clearColor];
         self.contentView.backgroundColor = [UIColor clearColor];
-        [self createUIComponents];
+        [self createUIComponent];
     }
     return self;
 }
 
 #pragma mark - Private Action
 
-- (void)createUIComponents {
+- (void)createUIComponent {
     [self.contentView addSubview:self.settingsLabel];
     [self.settingsLabel setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
     [self.settingsLabel mas_makeConstraints:^(MASConstraintMaker *make) {

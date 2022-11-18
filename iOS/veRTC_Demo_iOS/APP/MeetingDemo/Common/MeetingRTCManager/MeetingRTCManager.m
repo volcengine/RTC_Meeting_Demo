@@ -2,7 +2,7 @@
 #import "MeetingRTCManager.h"
 #import "AlertActionManager.h"
 
-@interface MeetingRTCManager () <ByteRTCEngineDelegate>
+@interface MeetingRTCManager () <ByteRTCVideoDelegate>
 
 @property (nonatomic, strong) RoomParamInfoModel *paramInfoModel;
 @property (nonatomic, strong) RoomVideoSession *localVideoSession;
@@ -10,6 +10,7 @@
 @property (nonatomic, strong) NSMutableDictionary *subscribeUidDic;
 @property (nonatomic, assign) NSInteger currnetCameraID;
 
+@property (nonatomic, strong) ByteRTCVideoEncoderConfig *solution;
 @end
 
 @implementation MeetingRTCManager
@@ -39,13 +40,12 @@
 }
 
 - (void)joinChannelWithRoomVideoSession:(RoomVideoSession *)videoSession {
+    // 设置音频场景类型
+    [self.rtcEngineKit setAudioScenario:ByteRTCAudioScenarioCommunication];
+    
     //设置订阅的音视频流回退选项
     //Set the subscribed audio and video stream fallback options
     [self.rtcEngineKit setSubscribeFallbackOption:ByteRTCSubscribeFallbackOptionAudioOnly];
-
-    //开启/关闭 本地音频采集
-    //Turn on/off local audio capture
-    [self enableLocalAudio:videoSession.isEnableAudio];
     
     //Turn on/off local video capture
     [self enableLocalVideo:videoSession.isEnableVideo];
@@ -57,40 +57,46 @@
 
     //设置本地视频镜像
     //Set local video mirroring
-    [self.rtcEngineKit setLocalVideoMirrorMode:ByteRTCMirrorModeOn];
+    [self.rtcEngineKit setLocalVideoMirrorType:ByteRTCMirrorTypeRenderAndEncoder];
     
     //开启/关闭发言者音量键控
     //Turn on/off speaker volume keying
-    [self.rtcEngineKit setAudioVolumeIndicationInterval:2000];
-
+    ByteRTCAudioPropertiesConfig *audioPropertiesConfig = [[ByteRTCAudioPropertiesConfig alloc] init];
+    audioPropertiesConfig.interval = 2000;
+    [self.rtcEngineKit enableAudioPropertiesReport:audioPropertiesConfig];
+    
     //加入房间，开始连麦,需要申请AppId和Token
     //Join the room, start connecting the microphone, you need to apply for AppId and Token
     ByteRTCUserInfo *userInfo = [[ByteRTCUserInfo alloc] init];
     userInfo.userId = videoSession.uid;
     
     ByteRTCRoomConfig *config = [[ByteRTCRoomConfig alloc] init];
-    config.profile = ByteRTCRoomProfileLiveBroadcasting;
+    config.profile = ByteRTCRoomProfileCommunication;
     config.isAutoPublish = YES;
     config.isAutoSubscribeAudio = YES;
     config.isAutoSubscribeVideo = NO;
     
-    [self.rtcEngineKit joinRoomByKey:videoSession.token
-                              roomId:videoSession.roomId
-                            userInfo:userInfo
-                       rtcRoomConfig:config];
+    self.rtcRoom = [self.rtcEngineKit createRTCRoom:videoSession.roomId];
+    self.rtcRoom.delegate = self;
+    [self.rtcRoom joinRoomByToken:videoSession.token userInfo:userInfo roomConfig:config];
+    [self publishStreamAudio:videoSession.isEnableAudio];
 }
 
 #pragma mark - rtc method
 
 - (void)updateRtcVideoParams {
-    ByteRTCVideoSolution *localSolution = [[ByteRTCVideoSolution alloc] init];
-    localSolution.videoSize = [SettingsService getResolution];
+    ByteRTCVideoEncoderConfig *localSolution =[[ByteRTCVideoEncoderConfig alloc] init];
+    localSolution.width = [SettingsService getResolution].width;
+    localSolution.height = [SettingsService getResolution].height;
+
     localSolution.frameRate = [SettingsService getFrameRate];
-    localSolution.maxKbps = [SettingsService getKBitRate];
+    localSolution.maxBitrate = [SettingsService getKBitRate];
+    
+    self.solution = localSolution;
     
     //设置本地视频属性
     //Set local video attributes
-    [self.rtcEngineKit setVideoEncoderConfig:@[localSolution]];
+    [self.rtcEngineKit SetVideoEncoderConfig:@[localSolution]];
 }
 
 - (void)switchCamera {
@@ -102,6 +108,13 @@
     } else {
         cameraID = ByteRTCCameraIDFront;
     }
+    
+    if (cameraID == ByteRTCCameraIDFront) {
+        [self.rtcEngineKit setLocalVideoMirrorType:ByteRTCMirrorTypeRenderAndEncoder];
+    } else {
+        [self.rtcEngineKit setLocalVideoMirrorType:ByteRTCMirrorTypeNone];
+    }
+    
     int result = [self.rtcEngineKit switchCamera:cameraID];
     if (0 == result) {
         self.currnetCameraID = cameraID;
@@ -113,17 +126,19 @@
     //Turn on/off the loudspeaker
     int result = 0;
     if (enableSpeaker) {
-        result = [self.rtcEngineKit setAudioPlaybackDevice:ByteRTCAudioPlaybackDeviceEarpiece];
+        result = [self.rtcEngineKit setAudioRoute:ByteRTCAudioRouteSpeakerphone];
     } else {
-        result = [self.rtcEngineKit setAudioPlaybackDevice:ByteRTCAudioPlaybackDeviceSpeakerphone];
+        result = [self.rtcEngineKit setAudioRoute:ByteRTCAudioRouteEarpiece];
     }
     return result;
 }
 
-- (void)enableLocalAudio:(BOOL)enable {
-    //开启/关闭 本地音频采集
-    //Turn on/off local audio capture
-    [self.rtcEngineKit muteLocalAudio:!enable];
+- (void)publishStreamAudio:(BOOL)isPublish {
+    if (isPublish) {
+        [self.rtcRoom publishStream:ByteRTCMediaStreamTypeAudio];
+    } else {
+        [self.rtcRoom unpublishStream:ByteRTCMediaStreamTypeAudio];
+    }
 }
 
 - (void)enableLocalVideo:(BOOL)enable {
@@ -140,7 +155,7 @@
     //离开频道
     //Leave the channel
     [self.rtcEngineKit stopAudioCapture];
-    [self.rtcEngineKit leaveRoom];
+    [self.rtcRoom leaveRoom];
     [self.subscribeUidDic removeAllObjects];
 }
 
@@ -161,13 +176,8 @@
     }
     NSString *value = [self.subscribeUidDic objectForKey:uid];
     if ([value integerValue] != 1) {
-        ByteRTCSubscribeVideoConfig *config = [[ByteRTCSubscribeVideoConfig alloc] init];
-        config.videoIndex = 0;
-        [self.rtcEngineKit subscribeUserStream:uid
-                              streamType:ByteRTCStreamIndexMain
-                               mediaType:ByteRTCSubscribeMediaTypeAudioAndVideo
-                             videoConfig:config];
-         
+        [self.rtcRoom subscribeStream:uid mediaStreamType:ByteRTCMediaStreamTypeBoth];
+        
         [self.subscribeUidDic setValue:@"1" forKey:uid];
     }
 }
@@ -176,12 +186,7 @@
     if (IsEmptyStr(uid)) {
         return;
     }
-    ByteRTCSubscribeVideoConfig *config = [[ByteRTCSubscribeVideoConfig alloc] init];
-    config.videoIndex = 0;
-    [self.rtcEngineKit subscribeUserStream:uid
-                          streamType:ByteRTCStreamIndexScreen
-                           mediaType:ByteRTCSubscribeMediaTypeAudioAndVideo
-                         videoConfig:config];
+    [self.rtcRoom subscribeScreen:uid mediaStreamType:ByteRTCMediaStreamTypeBoth];
 }
 
 - (void)unsubscribe:(NSString *_Nullable)uid {
@@ -190,13 +195,8 @@
     }
     NSString *value = [self.subscribeUidDic objectForKey:uid];
     if ([value integerValue] == 1) {
-        ByteRTCSubscribeVideoConfig *config = [[ByteRTCSubscribeVideoConfig alloc] init];
-        config.videoIndex = 0;
-        
-        [self.rtcEngineKit subscribeUserStream:uid
-                              streamType:ByteRTCStreamIndexMain
-                               mediaType:ByteRTCSubscribeMediaTypeAudioOnly
-                             videoConfig:config];
+        [self.rtcRoom unSubscribeStream:uid mediaStreamType:ByteRTCMediaStreamTypeVideo];
+        [self.rtcRoom subscribeStream:uid mediaStreamType:ByteRTCMediaStreamTypeAudio];
 
         [self.subscribeUidDic setValue:@"0" forKey:uid];
     }
@@ -206,13 +206,8 @@
     if (IsEmptyStr(uid)) {
         return;
     }
-    ByteRTCSubscribeVideoConfig *config = [[ByteRTCSubscribeVideoConfig alloc] init];
-    config.videoIndex = 0;
     
-    [self.rtcEngineKit subscribeUserStream:uid
-                          streamType:ByteRTCStreamIndexScreen
-                           mediaType:ByteRTCSubscribeMediaTypeNone
-                         videoConfig:config];
+    [self.rtcRoom unSubscribeScreen:uid mediaStreamType:ByteRTCMediaStreamTypeBoth];
 }
 
 - (NSDictionary *_Nullable)getSubscribeUidDic {
@@ -220,7 +215,10 @@
 }
 
 - (void)setupRemoteVideo:(ByteRTCVideoCanvas *)canvas {
-    [self.rtcEngineKit setRemoteVideoCanvas:canvas.uid withIndex:ByteRTCStreamIndexMain withCanvas:canvas];
+    if (canvas) {
+        canvas.roomId = self.rtcRoom.getRoomId;
+        [self.rtcEngineKit setRemoteVideoCanvas:canvas.uid withIndex:ByteRTCStreamIndexMain withCanvas:canvas];
+    }
 }
 
 - (void)setupLocalVideo:(ByteRTCVideoCanvas *)canvas {
@@ -233,13 +231,13 @@
     cans.renderMode = ByteRTCRenderModeFit;
     cans.view.backgroundColor = [UIColor clearColor];
     cans.view = view;
+    cans.roomId = self.rtcRoom.getRoomId;
     [self.rtcEngineKit setRemoteVideoCanvas:cans.uid withIndex:ByteRTCStreamIndexScreen withCanvas:cans];
 }
 
-#pragma mark - ByteRTCEngineDelegate
+#pragma mark - ByteRTCVideoDelegate
 
-- (void)rtcEngine:(ByteRTCEngineKit * _Nonnull)engine
-      onStreamAdd:(id<ByteRTCStream> _Nonnull)stream {
+- (void)rtcRoom:(ByteRTCRoom *)rtcRoom onStreamAdd:(id<ByteRTCStream>)stream  {
     if (stream.isScreen) {
         if ([self.delegate respondsToSelector:@selector(rtcManager:didScreenStreamAdded:)]) {
             [self.delegate rtcManager:self didScreenStreamAdded:stream.userId];
@@ -251,10 +249,7 @@
     }
 }
 
-- (void)rtcEngine:(ByteRTCEngineKit *_Nonnull)engine
-    didStreamRemoved:(NSString *_Nonnull)uid
-           stream:(id<ByteRTCStream> _Nonnull)stream
-           reason:(ByteRTCStreamRemoveReason)reason {
+- (void)rtcRoom:(ByteRTCRoom *)rtcRoom didStreamRemoved:(NSString *)uid stream:(id<ByteRTCStream>)stream reason:(ByteRTCStreamRemoveReason)reason {
     if (stream.isScreen) {
         if ([self.delegate respondsToSelector:@selector(rtcManager:didScreenStreamRemoved:)]) {
             [self.delegate rtcManager:self didScreenStreamRemoved:stream.userId];
@@ -267,14 +262,15 @@
     }
 }
 
-- (void)rtcEngine:(ByteRTCEngineKit *)engine onVideoDeviceStateChanged:(NSString *)device_id device_type:(ByteRTCVideoDeviceType)device_type device_state:(ByteRTCMediaDeviceState)device_state device_error:(ByteRTCMediaDeviceError)device_error {
+- (void)rtcEngine:(ByteRTCVideo *)engine onVideoDeviceStateChanged:(NSString *)device_id device_type:(ByteRTCVideoDeviceType)device_type device_state:(ByteRTCMediaDeviceState)device_state device_error:(ByteRTCMediaDeviceError)device_error {
+
     if (device_type == ByteRTCVideoDeviceTypeScreenCaptureDevice) {
         if (device_state == ByteRTCMediaDeviceStateStarted) {
-            [engine publishScreen:ByteRTCMediaStreamTypeBoth];
+            [self.rtcRoom publishScreen:ByteRTCMediaStreamTypeBoth];
             NSLog(@"onVideoDeviceStateChanged Started");
         } else if (device_state == ByteRTCMediaDeviceStateStopped ||
                    device_state == ByteRTCMediaDeviceStateRuntimeError) {
-            [engine unpublishScreen:ByteRTCMediaStreamTypeBoth];
+            [self.rtcRoom unpublishScreen:ByteRTCMediaStreamTypeBoth];
             NSLog(@"onVideoDeviceStateChanged Stopped");
         }
     }
@@ -282,17 +278,18 @@
 
 #pragma mark - Rtc Stats
 
-- (void)rtcEngine:(ByteRTCEngineKit *_Nonnull)engine onLocalStreamStats:(const ByteRTCLocalStreamStats *_Nonnull)stats {
+- (void)rtcRoom:(ByteRTCRoom *)rtcRoom onLocalStreamStats:(ByteRTCLocalStreamStats *)stats {
+
     self.paramInfoModel.local_bit_video = [NSString stringWithFormat:@"%.0f",stats.video_stats.sentKBitrate];
     self.paramInfoModel.local_fps = [NSString stringWithFormat:@"%ld",(long)stats.video_stats.inputFrameRate];
-    self.paramInfoModel.local_res = [NSString stringWithFormat:@"%ld*%ld",(long)stats.video_stats.encodedFrameWidth, stats.video_stats.encodedFrameHeight];
+    self.paramInfoModel.local_res = [NSString stringWithFormat:@"%ld*%ld",(long)stats.video_stats.encodedFrameWidth, (long)stats.video_stats.encodedFrameHeight];
     
     self.paramInfoModel.local_bit_audio = [NSString stringWithFormat:@"%.0f",stats.audio_stats.sentKBitrate];
     
     [self updateRoomParamInfoModel];
 }
 
-- (void)rtcEngine:(ByteRTCEngineKit *_Nonnull)engine onRemoteStreamStats:(const ByteRTCRemoteStreamStats *_Nonnull)stats {
+- (void)rtcRoom:(ByteRTCRoom *)rtcRoom onRemoteStreamStats:(ByteRTCRemoteStreamStats *)stats {
     self.paramInfoModel.remote_rtt_audio = [NSString stringWithFormat:@"%ld",(long)stats.audio_stats.rtt];
     self.paramInfoModel.remote_bit_audio = [NSString stringWithFormat:@"%ld",(long)stats.audio_stats.receivedKBitrate];
     self.paramInfoModel.remote_loss_audio = [NSString stringWithFormat:@"%ld",(long)stats.audio_stats.audioLossRate];
@@ -322,7 +319,7 @@
     [self updateRoomParamInfoModel];
 }
 
-- (void)rtcEngine:(ByteRTCEngineKit * _Nonnull)engine reportSysStats:(const ByteRTCSysStats * _Nonnull)stats {
+- (void)rtcEngine:(ByteRTCVideo *)engine reportSysStats:(const ByteRTCSysStats *)stats {
     self.paramInfoModel.remote_cpu_avg = [NSString stringWithFormat:@"%.2f", stats.cpu_app_usage * 100];
     if (stats.cpu_app_usage > [self.paramInfoModel.remote_cpu_max floatValue] / 100.0) {
         self.paramInfoModel.remote_cpu_max = [NSString stringWithFormat:@"%.2f", stats.cpu_app_usage * 100];
@@ -331,13 +328,14 @@
     [self updateRoomParamInfoModel];
 }
 
-- (void)rtcEngine:(ByteRTCEngineKit * _Nonnull)engine onAudioVolumeIndication:(NSArray<ByteRTCAudioVolumeInfo *> * _Nonnull)speakers totalRemoteVolume:(NSInteger)totalRemoteVolume {
+- (void)rtcEngine:(ByteRTCVideo *)engine onRemoteAudioPropertiesReport:(NSArray<ByteRTCRemoteAudioPropertiesInfo *> *)audioPropertiesInfos totalRemoteVolume:(NSInteger)totalRemoteVolume {
+    
     NSInteger minVolume = 10;
     NSMutableDictionary *parDic = [[NSMutableDictionary alloc] init];
-    for (int i = 0; i < speakers.count; i++) {
-        ByteRTCAudioVolumeInfo *model = speakers[i];
-        if (model.linearVolume > minVolume) {
-            [parDic setValue:@(model.linearVolume) forKey:model.uid];
+    for (int i = 0; i < audioPropertiesInfos.count; i++) {
+        ByteRTCRemoteAudioPropertiesInfo *model = audioPropertiesInfos[i];
+        if (model.audioPropertiesInfo.linearVolume > minVolume) {
+            [parDic setValue:@(model.audioPropertiesInfo.linearVolume) forKey:model.streamKey.userId];
         }
     }
     if ([self.delegate respondsToSelector:@selector(rtcManager:reportAllAudioVolume:)]) {
@@ -346,11 +344,13 @@
 }
 
 - (void)startScreenSharingWithParam:(ByteRTCScreenCaptureParam *_Nonnull)param preferredExtension:(NSString *)extension groupId:(NSString *)groupId {
-    ByteRTCVideoSolution *screenSolution = [[ByteRTCVideoSolution alloc] init];
-    screenSolution.videoSize = [SettingsService getScreenResolution];
+    ByteRTCVideoEncoderConfig *screenSolution =[[ByteRTCVideoEncoderConfig alloc] init];
+    CGSize videoSize = [SettingsService getScreenResolution];
+    screenSolution.width = videoSize.width;
+    screenSolution.height = videoSize.height;
     screenSolution.frameRate = [SettingsService getScreenFrameRate];
-    screenSolution.maxKbps = [SettingsService getScreenKBitRate];
-    [self.rtcEngineKit setVideoEncoderConfig:ByteRTCStreamIndexScreen config:@[screenSolution]];
+    screenSolution.maxBitrate = [SettingsService getScreenKBitRate];
+    [self.rtcEngineKit SetScreenVideoEncoderConfig:screenSolution];
     
     // startScreenCapture 后需要在 -onVideoDeviceStateChanged 回调中开启推流 -publishScreen
     [self.rtcEngineKit startScreenCapture:ByteRTCScreenMediaTypeVideoAndAudio bundleId:extension];

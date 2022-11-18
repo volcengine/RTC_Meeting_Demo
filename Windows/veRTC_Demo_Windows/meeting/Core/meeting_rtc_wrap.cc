@@ -64,25 +64,28 @@ int MeetingRtcEngineWrap::init() {
 				}
 		});
 
-	QObject::connect(
-		&RtcEngineWrap::instance(), &RtcEngineWrap::sigOnMediaDeviceStateChanged,
-		&engine_wrap,
-		[=](std::string device_id, bytertc::MediaDeviceType type,
-			bytertc::MediaDeviceState state, bytertc::MediaDeviceError error) {
-				switch (type) {
-				case bytertc::kMediaDeviceTypeAudioCaptureDevice:
-					instance().onAudioStateChanged(device_id, type, state, error);
-					break;
-				case bytertc::kMediaDeviceTypeVideoCaptureDevice:
-					instance().onVideoStateChanged(device_id, type, state, error);
-					break;
-				default:
-					break;
-				}
-		});
+    QObject::connect(
+        &RtcEngineWrap::instance(), &RtcEngineWrap::sigOnVideoDeviceStateChanged,
+        &engine_wrap,
+        [=](std::string device_id, bytertc::RTCVideoDeviceType type,
+            bytertc::MediaDeviceState state, bytertc::MediaDeviceError error) {
+                if (type == bytertc::kRTCVideoDeviceTypeCaptureDevice) {
+                    instance().onVideoStateChanged(device_id, state, error);
+                }
+        });
+
+    QObject::connect(
+        &RtcEngineWrap::instance(), &RtcEngineWrap::sigOnAudioDeviceStateChanged,
+        &engine_wrap,
+        [=](std::string device_id, bytertc::RTCAudioDeviceType type,
+            bytertc::MediaDeviceState state, bytertc::MediaDeviceError error) {
+                if (type == bytertc::kRTCAudioDeviceTypeCaptureDevice) {
+                    instance().onAudioStateChanged(device_id, state, error);
+                }
+        });
 
 	QObject::connect(
-		&RtcEngineWrap::instance(), &RtcEngineWrap::sigOnAudioVolumeIndication,
+		&RtcEngineWrap::instance(), &RtcEngineWrap::sigOnRemoteAudioVolumeIndication,
 		&engine_wrap,
 		[=](std::vector<AudioVolumeInfoWrap> speakers, int totalVolume) {
 			std::sort(
@@ -91,7 +94,6 @@ int MeetingRtcEngineWrap::init() {
 					return l.volume > r.volume;
 				});
 			meeting::DataMgr::instance().setVolumes(std::move(speakers));
-
 			emit instance().sigOnAudioVolumeUpdate();
 		});
 
@@ -229,38 +231,45 @@ int MeetingRtcEngineWrap::muteLocalVideo(bool bMute) {
   return RtcEngineWrap::instance().muteLocalVideo(bMute);
 }
 
+int MeetingRtcEngineWrap::setLocalMirrorMode(bool isMirrored) {
+    auto type = isMirrored ? bytertc::MirrorType::kMirrorTypeRenderAndEncoder
+        : bytertc::MirrorType::kMirrorTypeNone;
+    return RtcEngineWrap::instance().setLocalPreviewMirrorMode(type);
+}
+
 int MeetingRtcEngineWrap::login(const std::string& roomid,
                                 const std::string& uid,
                                 const std::string& token) {
-  auto& engine_wrap = instance();
-  bytertc::UserInfo user = {uid.c_str(), nullptr};
-  return RtcEngineWrap::instance().joinRoom(
-      token, roomid, user,
-      bytertc::RoomProfileType::kRoomProfileTypeLiveBroadcasting);
+    auto& engine_wrap = instance();
+
+    bytertc::UserInfo user = { uid.c_str(), nullptr };
+    return RtcEngineWrap::instance().joinRoom(
+        token, roomid, user,
+        bytertc::RoomProfileType::kRoomProfileTypeLiveBroadcasting);
 }
 
 int MeetingRtcEngineWrap::logout() {
-  auto& engine_wrap = instance();
-  return RtcEngineWrap::instance().leaveRoom();
+    auto& engine_wrap = instance();
+    return RtcEngineWrap::instance().leaveRoom();
 }
 
 int MeetingRtcEngineWrap::setVideoProfiles(const VideoConfiger& vc) {
-  auto& engine_wrap = instance();
-  bytertc::VideoSolution resolution;
-  resolution.width = vc.resolution.width;
-  resolution.height = vc.resolution.height;
-  resolution.fps = vc.fps;
-  resolution.max_send_kbps = vc.kbps;
-  return RtcEngineWrap::instance().setVideoProfiles(&resolution, 1);
+    auto& engine_wrap = instance();
+    bytertc::VideoEncoderConfig config;
+    config.width = vc.resolution.width;
+    config.height = vc.resolution.height;
+    config.frameRate = vc.fps;
+    config.maxBitrate = vc.kbpsRange.max_kbps;
+    return RtcEngineWrap::instance().setVideoProfiles(config);
 }
 
 int MeetingRtcEngineWrap::setScreenProfiles(const VideoConfiger& vc) {
-  bytertc::VideoSolution config;
-  config.fps = vc.fps;
+  bytertc::VideoEncoderConfig config;
+  config.frameRate = vc.fps;
   config.height = vc.resolution.height;
   config.width = vc.resolution.width;
-  config.max_send_kbps = vc.kbpsRange.max_kbps;
-  return RtcEngineWrap::instance().setScreenProfiles(&config, 1);
+  config.maxBitrate = vc.kbpsRange.max_kbps;
+  return RtcEngineWrap::instance().setScreenProfiles(config);
 }
 
 int MeetingRtcEngineWrap::getAudioInputDevices(
@@ -343,14 +352,17 @@ bool MeetingRtcEngineWrap::audioRecordDevicesTest() {
 
 int MeetingRtcEngineWrap::feedBack(const std::string& str) { return 0; }
 
-void MeetingRtcEngineWrap::onVideoStateChanged(
-    std::string device_id, bytertc::MediaDeviceType device_type,
+void MeetingRtcEngineWrap::onVideoStateChanged(std::string device_id,
     bytertc::MediaDeviceState device_state, bytertc::MediaDeviceError error) {
 	emit instance().sigUpdateDevices();
 	std::vector<RtcDevice> devices;
 	MeetingRtcEngineWrap::getVideoCaptureDevices(devices);
-	if ((devices.empty() || device_state == bytertc::kMediaDeviceStateRuntimeError) 
+	if ((devices.empty() || error == bytertc::kMediaDeviceErrorDeviceNoPermission)
 		&& !meeting::DataMgr::instance().mute_video()) {
+        if (error == bytertc::kMediaDeviceErrorDeviceNoPermission) {
+            WarningTips::showTips("摄像头打开失败，请检查设备", TipsType::kWarning,
+                meeting::PageManager::currentWidget(), 2000);
+        }
 		meeting::DataMgr::instance().setMuteVideo(true);
 		MeetingRtcEngineWrap::muteLocalVideo(true);
 		emit instance().sigUpdateVideo();
@@ -367,14 +379,14 @@ void MeetingRtcEngineWrap::onVideoStateChanged(
 		case bytertc::kMediaDeviceStateRemoved:  // Pull out the device
 			WarningTips::showTips("录像设备被拔出", TipsType::kWarning,
 				meeting::PageManager::currentWidget(), 2000);
+			MeetingRtcEngineWrap::setVideoCaptureDevice(RtcEngineWrap::instance().getCurrentVideoCaptureDeviceIndex());
 			break;
 		default:
 			break;
 	}
 }
 
-void MeetingRtcEngineWrap::onAudioStateChanged(
-    std::string device_id, bytertc::MediaDeviceType device_type,
+void MeetingRtcEngineWrap::onAudioStateChanged(std::string device_id, 
     bytertc::MediaDeviceState device_state, bytertc::MediaDeviceError error) {
 	emit instance().sigUpdateDevices();
 	std::vector<RtcDevice> devices;

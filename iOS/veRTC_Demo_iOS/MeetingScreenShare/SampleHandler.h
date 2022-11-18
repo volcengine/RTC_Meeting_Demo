@@ -2,8 +2,8 @@
 //  SampleHandler.h
 //  MeetingScreenShare
 //
-//  Created by bytedance on 2022/5/27.
-//  Copyright © 2022 bytedance. All rights reserved.
+//  Created by on 2022/5/27.
+//  
 //
 
 #import <ReplayKit/ReplayKit.h>
