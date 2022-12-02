@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
+    <script>
+      //! umi version: 3.5.20
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/javascript">
+      window.routerBase = '/';
+      if (window.location.hostname === 'rtc.demo.volcengine.com') {
+        window.routerBase = '/solution/meeting';
+      } else if (window.location.hostname === 'demo.volcvideo.com') {
+        window.routerBase = '/rtc/solution/meeting';
+      }
+    </script>
+  </body>
+</html>

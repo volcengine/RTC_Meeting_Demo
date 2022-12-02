@@ -1,0 +1,37 @@
+import * as React from 'react';
+import styles from './index.less';
+import { MeetingModelState } from '@/models/meeting';
+
+interface ISpeakerViewProps {
+  views: React.ReactNode[];
+  screenView: React.ReactNode;
+  meeting: MeetingModelState;
+}
+
+const SpeakerView: React.FC<ISpeakerViewProps> = ({
+  views,
+  screenView,
+  meeting,
+}) => {
+  return (
+    <div className={styles.speakerViewcontainer}>
+      <div
+        className={
+          meeting?.speakCollapse ? styles.usersViewCollapse : styles.usersView
+        }
+      >
+        {views.map((view) => (
+          <div
+            className={styles.speakView}
+            key={(view as React.ReactElement)?.key}
+          >
+            {view}
+          </div>
+        ))}
+      </div>
+      <div className={styles.speakerScreenView}>{screenView}</div>
+    </div>
+  );
+};
+
+export default SpeakerView;
