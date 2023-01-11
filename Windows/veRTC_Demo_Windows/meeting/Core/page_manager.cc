@@ -17,8 +17,6 @@
 #include "meeting/Core/meeting_session.h"
 #include "meeting/Core/utils.h"
 #include "meeting/Core/worker.h"
-#include "meeting/common/call_exp_dlg.h"
-#include "meeting/common/feed_back_dlg.h"
 #include "meeting/common/meeting_quit_dlg.h"
 
 namespace meeting {
@@ -138,24 +136,6 @@ void PageManager::init() {
 		cache.clear();
 		MeetingRtcEngineWrap::instance().logout();
 		showLogin();
-		QTimer::singleShot(100, [] {
-			auto ptr = instance().meeting_login_widget_.get();
-			auto exp_dlg = std::unique_ptr<CallExpDlg>(new CallExpDlg);
-			if (ptr) {
-				exp_dlg->move(QPoint(
-					ptr->pos().x() + (ptr->width() - exp_dlg->width()) / 2,
-					ptr->pos().y() + ((ptr->height() - exp_dlg->height()) / 2)));
-			}
-			if (exp_dlg->exec() == QDialog::Accepted) {
-				auto feed_dlg = std::unique_ptr<FeedBackDlg>(new FeedBackDlg);
-				if (ptr) {
-					feed_dlg->move(QPoint(
-						ptr->pos().x() + (ptr->width() - feed_dlg->width()) / 2,
-						ptr->pos().y() + ((ptr->height() - feed_dlg->height()) / 2)));
-				}
-				feed_dlg->exec();
-			}
-			});
 		});
 
 	QObject::connect(&MeetingRtcEngineWrap::instance(),

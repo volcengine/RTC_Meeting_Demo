@@ -4,20 +4,19 @@ import android.content.Intent;
 import android.view.View;
 
 import com.ss.video.rtc.demo.basic_module.ui.CommonDialog;
-import com.ss.video.rtc.demo.basic_module.ui.CommonExperienceDialog;
 import com.ss.video.rtc.demo.basic_module.utils.IMEUtils;
 import com.ss.video.rtc.demo.basic_module.utils.SafeToast;
-import com.volcengine.vertcdemo.core.net.ErrorTool;
-import com.volcengine.vertcdemo.meeting.bean.MeetingTokenInfo;
-import com.volcengine.vertcdemo.meeting.core.MeetingDataManager;
-import com.volcengine.vertcdemo.meeting.core.MeetingRTCManager;
 import com.volcengine.vertcdemo.core.SolutionDataManager;
 import com.volcengine.vertcdemo.core.eventbus.RefreshUserNameEvent;
 import com.volcengine.vertcdemo.core.eventbus.SolutionDemoEventManager;
+import com.volcengine.vertcdemo.core.net.ErrorTool;
 import com.volcengine.vertcdemo.core.net.IRequestCallback;
+import com.volcengine.vertcdemo.meeting.R;
+import com.volcengine.vertcdemo.meeting.bean.MeetingTokenInfo;
+import com.volcengine.vertcdemo.meeting.core.MeetingDataManager;
+import com.volcengine.vertcdemo.meeting.core.MeetingRTCManager;
 import com.volcengine.vertcdemo.meeting.feature.roommain.RoomActivity;
 import com.volcengine.vertcdemo.meeting.feature.settings.SettingsActivity;
-import com.volcengine.vertcdemo.meeting.R;
 
 public class CreateMeetingPresenter {
 
@@ -105,10 +104,6 @@ public class CreateMeetingPresenter {
     public void dealResult(int requestCode, int resultCode) {
         if (mLoginActivity != null && !mLoginActivity.isFinishing()) {
             if (requestCode == RoomActivity.ROOM_REQUEST_CODE) {
-                CommonExperienceDialog dialog = new CommonExperienceDialog(
-                        mLoginActivity, (i, i1, s) -> MeetingRTCManager.ins().feedback(i, i1, s));
-                dialog.show();
-
                 if (resultCode == RoomActivity.REQUEST_CODE_DUPLICATE_LOGIN) {
                     CommonDialog kickOutDialog = new CommonDialog(mLoginActivity);
                     kickOutDialog.setMessage(mLoginActivity.getString(R.string.login_duplicate_login));

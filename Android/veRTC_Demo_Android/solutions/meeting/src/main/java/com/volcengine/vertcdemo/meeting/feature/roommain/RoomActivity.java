@@ -48,6 +48,7 @@ import com.volcengine.vertcdemo.core.eventbus.TokenExpiredEvent;
 import com.volcengine.vertcdemo.core.eventbus.VolumeEvent;
 import com.volcengine.vertcdemo.meeting.bean.MeetingUserInfo;
 import com.volcengine.vertcdemo.meeting.R;
+import com.volcengine.vertcdemo.utils.DebounceClickListener;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -218,8 +219,8 @@ public class RoomActivity extends BaseActivity implements View.OnClickListener {
 
         mSwitchCameraIv.setOnClickListener(this);
         mLeaveMeetingIv.setOnClickListener(this);
-        mMicIv.setOnClickListener(this);
-        mCameraIv.setOnClickListener(this);
+        mMicIv.setOnClickListener(DebounceClickListener.create(this));
+        mCameraIv.setOnClickListener(DebounceClickListener.create(this));
         mScreenShareIv.setOnClickListener(this);
         mParticipantIv.setOnClickListener(this);
         mMoreFuncIv.setOnClickListener(this);

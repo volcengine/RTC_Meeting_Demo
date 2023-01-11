@@ -54,7 +54,8 @@ public class MeetingRTCManager {
     public static final int VOLUME_INTERVAL_MS = 1000;
     public static final int VOLUME_SMOOTH = 8;
 
-    private static boolean sIsFront;
+    private static boolean sIsFront = true;
+    private static MirrorType sMirrorType = MirrorType.MIRROR_TYPE_RENDER_AND_ENCODER;
 
     private final RTCVideoEventHandlerWithRTS mRTCVideoEventHandler = new RTCVideoEventHandlerWithRTS() {
 
@@ -318,10 +319,13 @@ public class MeetingRTCManager {
 
     public void setLocalVideoMirrorMode(MirrorType type) {
         MLog.d(TAG, "setLocalVideoMirrorMode: " + type);
+        sMirrorType = type;
         if (mRTCVideo == null) {
             return;
         }
-        mRTCVideo.setLocalVideoMirrorType(type);
+        mRTCVideo.setLocalVideoMirrorType(sIsFront && type == MirrorType.MIRROR_TYPE_RENDER_AND_ENCODER
+                ? MirrorType.MIRROR_TYPE_RENDER_AND_ENCODER
+                : MirrorType.MIRROR_TYPE_NONE);
     }
 
     public void setVideoEncoderConfig(VideoEncoderConfig videoEncoderConfig) {
@@ -394,6 +398,7 @@ public class MeetingRTCManager {
         }
         sIsFront = !sIsFront;
         mRTCVideo.switchCamera(sIsFront ? CameraId.CAMERA_ID_FRONT : CameraId.CAMERA_ID_BACK);
+        setLocalVideoMirrorMode(sMirrorType);
     }
 
     public void setEnableSpeakerphone(boolean open) {

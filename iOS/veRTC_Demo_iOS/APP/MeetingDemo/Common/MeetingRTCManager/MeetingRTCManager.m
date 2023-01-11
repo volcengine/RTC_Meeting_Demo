@@ -57,7 +57,11 @@
 
     //设置本地视频镜像
     //Set local video mirroring
-    [self.rtcEngineKit setLocalVideoMirrorType:ByteRTCMirrorTypeRenderAndEncoder];
+    if (self.currnetCameraID == ByteRTCCameraIDFront) {
+        [self.rtcEngineKit setLocalVideoMirrorType:ByteRTCMirrorTypeRenderAndEncoder];
+    } else {
+        [self.rtcEngineKit setLocalVideoMirrorType:ByteRTCMirrorTypeNone];
+    }
     
     //开启/关闭发言者音量键控
     //Turn on/off speaker volume keying
@@ -237,28 +241,32 @@
 
 #pragma mark - ByteRTCVideoDelegate
 
-- (void)rtcRoom:(ByteRTCRoom *)rtcRoom onStreamAdd:(id<ByteRTCStream>)stream  {
-    if (stream.isScreen) {
-        if ([self.delegate respondsToSelector:@selector(rtcManager:didScreenStreamAdded:)]) {
-            [self.delegate rtcManager:self didScreenStreamAdded:stream.userId];
-        }
-    } else {
+- (void)rtcRoom:(ByteRTCRoom *)rtcRoom onUserPublishStream:(NSString *)userId type:(ByteRTCMediaStreamType)type {
+    if (type != ByteRTCMediaStreamTypeAudio) {
         if ([self.delegate respondsToSelector:@selector(rtcManager:didStreamAdded:)]) {
-            [self.delegate rtcManager:self didStreamAdded:stream.userId];
+            [self.delegate rtcManager:self didStreamAdded:userId];
         }
     }
 }
 
-- (void)rtcRoom:(ByteRTCRoom *)rtcRoom didStreamRemoved:(NSString *)uid stream:(id<ByteRTCStream>)stream reason:(ByteRTCStreamRemoveReason)reason {
-    if (stream.isScreen) {
-        if ([self.delegate respondsToSelector:@selector(rtcManager:didScreenStreamRemoved:)]) {
-            [self.delegate rtcManager:self didScreenStreamRemoved:stream.userId];
-        }
-    } else {
-        [self.subscribeUidDic setValue:@"0" forKey:stream.userId];
+- (void)rtcRoom:(ByteRTCRoom *)rtcRoom onUserUnpublishStream:(NSString *)userId type:(ByteRTCMediaStreamType)type reason:(ByteRTCStreamRemoveReason)reason {
+    if (type != ByteRTCMediaStreamTypeAudio) {
+        [self.subscribeUidDic setValue:@"0" forKey:userId];
         if ([self.delegate respondsToSelector:@selector(rtcManager:didStreamRemoved:)]) {
-            [self.delegate rtcManager:self didStreamRemoved:stream.userId];
+            [self.delegate rtcManager:self didStreamRemoved:userId];
         }
+    }
+}
+
+- (void)rtcRoom:(ByteRTCRoom *)rtcRoom onUserPublishScreen:(NSString *)userId type:(ByteRTCMediaStreamType)type {
+    if ([self.delegate respondsToSelector:@selector(rtcManager:didScreenStreamAdded:)]) {
+        [self.delegate rtcManager:self didScreenStreamAdded:userId];
+    }
+}
+
+- (void)rtcRoom:(ByteRTCRoom *)rtcRoom onUserUnpublishScreen:(NSString *)userId type:(ByteRTCMediaStreamType)type reason:(ByteRTCStreamRemoveReason)reason {
+    if ([self.delegate respondsToSelector:@selector(rtcManager:didScreenStreamRemoved:)]) {
+        [self.delegate rtcManager:self didScreenStreamRemoved:userId];
     }
 }
 

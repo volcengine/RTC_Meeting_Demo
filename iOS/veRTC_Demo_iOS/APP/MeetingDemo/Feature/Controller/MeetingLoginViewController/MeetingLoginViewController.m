@@ -3,7 +3,6 @@
 #import "MeetingLoginViewController.h"
 #import "MeetingRTCManager.h"
 #import "RoomViewController.h"
-#import "FeedbackView.h"
 #import "RoomVideoSession.h"
 #import "SettingViewController.h"
 #import "MeetingRTMManager.h"
@@ -23,7 +22,6 @@
 @property (nonatomic, strong) UIImageView *emptImageView;
 @property (nonatomic, strong) UIView *videoView;
 @property (nonatomic, strong) UIView *maskView;
-@property (nonatomic, weak) FeedbackView *feedbackView;
 
 @property (nonatomic, strong) UITapGestureRecognizer *tap;
 @property (nonatomic, copy) NSString *currentAppid;
@@ -408,14 +406,6 @@
 }
 
 - (void)closeRoomAction:(BOOL)isEnableAudio isEnableVideo:(BOOL)isEnableVideo {
-    if (!self.feedbackView) {
-        __block FeedbackView *feedbackView = [[FeedbackView alloc] init];
-        self.feedbackView = feedbackView;
-        [feedbackView show];
-        feedbackView.clickCancelBlock = ^{
-            feedbackView = nil;
-        };
-    }
     [self.videoView setHidden:!isEnableVideo];
     self.emptImageView.hidden = isEnableVideo;
     self.enableVideoBtn.status = isEnableVideo ? ButtonStatusNone : ButtonStatusActive;

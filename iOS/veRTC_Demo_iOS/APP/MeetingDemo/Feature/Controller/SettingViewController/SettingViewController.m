@@ -130,10 +130,12 @@ typedef NS_ENUM(NSInteger, SettingsGroupType) {
         case SettingsGroupTypeHistory: {
             cell = [tableView dequeueReusableCellWithIdentifier:kSettingsRightLabelCellIdentifier forIndexPath:indexPath];
             [(SettingsRightLabelCell *)cell settingsLabel].text = self.groupTypes[indexPath.row];
+            [(SettingsRightLabelCell *)cell settingsRightLabel].text = @"";
         } break;
         case SettingsGroupTypeSelfHistory: {
             cell = [tableView dequeueReusableCellWithIdentifier:kSettingsRightLabelCellIdentifier forIndexPath:indexPath];
             [(SettingsRightLabelCell *)cell settingsLabel].text = self.groupTypes[indexPath.row];
+            [(SettingsRightLabelCell *)cell settingsRightLabel].text = @"";
         } break;
         default:
             break;

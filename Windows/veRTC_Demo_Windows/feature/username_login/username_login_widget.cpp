@@ -213,6 +213,6 @@ void UserNameLogin::_goMainWidget() {
 	hide();
 	for each (auto var in timers_) var->stop();
 	timers_.clear();
-    SceneSelectWidget::instance().updateUserName();
+	SceneSelectWidget::instance().updateUserName();
 	SceneSelectWidget::instance().show();
 }

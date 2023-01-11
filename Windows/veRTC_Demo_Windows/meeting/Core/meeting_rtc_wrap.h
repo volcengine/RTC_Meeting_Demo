@@ -61,9 +61,6 @@ public:
 	static QPixmap getThumbnail(SnapshotAttr::SnapshotType type, void* source_id,
 		int max_width, int max_height);
 	static bool audioRecordDevicesTest();
-
-	static int feedBack(const std::string& str);
-
  public:
 	 void onVideoStateChanged(std::string device_id,
 		 bytertc::MediaDeviceState device_state, bytertc::MediaDeviceError error);

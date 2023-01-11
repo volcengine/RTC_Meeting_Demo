@@ -50,7 +50,6 @@ public class RoomPresenter {
         MeetingRTCManager.ins().joinRoom(token, channelId, uid);
         MeetingRTCManager.ins().enableLocalVideo(MeetingDataManager.getCameraStatus());
         MeetingRTCManager.ins().enableLocalAudio(MeetingDataManager.getMicStatus());
-        MeetingRTCManager.ins().muteLocalAudioStream(!MeetingDataManager.getMicStatus());
     }
 
     public void startCountDuration() {

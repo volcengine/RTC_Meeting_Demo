@@ -727,7 +727,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MeetingScreenShare/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MeetingScreenShare;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 bytedance. All rights reserved.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 All rights reserved.";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -758,7 +758,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MeetingScreenShare/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MeetingScreenShare;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 bytedance. All rights reserved.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 All rights reserved.";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -897,7 +897,7 @@
 				CODE_SIGN_ENTITLEMENTS = MeetingScreenShare/veRTC_Demo.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 3XMD9D6A65;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -923,7 +923,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				MARKETING_VERSION = 12.0.2;
+				MARKETING_VERSION = 12.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = vertc.veRTCDemo.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = veRTC_Development_20211117;
@@ -943,7 +943,7 @@
 				CODE_SIGN_ENTITLEMENTS = MeetingScreenShare/veRTC_Demo_Test.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = X46375UBYG;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -969,7 +969,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				MARKETING_VERSION = 12.0.2;
+				MARKETING_VERSION = 12.0.5;
 				PRODUCT_BUNDLE_IDENTIFIER = rtc.veRTCDemo.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = VERTCDemoInHouseDist;

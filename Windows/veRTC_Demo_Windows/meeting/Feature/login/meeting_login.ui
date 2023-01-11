@@ -121,7 +121,7 @@ background:#1D2129;
         <item>
          <widget class="QLabel" name="lbl_demo_ver">
           <property name="text">
-           <string>Demo版本v12.0.3</string>
+           <string>App版本v12.0.5</string>
           </property>
          </widget>
         </item>

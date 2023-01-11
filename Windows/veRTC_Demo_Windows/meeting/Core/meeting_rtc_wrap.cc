@@ -350,8 +350,6 @@ bool MeetingRtcEngineWrap::audioRecordDevicesTest() {
   return RtcEngineWrap::instance().audioReocrdDeviceTest();
 }
 
-int MeetingRtcEngineWrap::feedBack(const std::string& str) { return 0; }
-
 void MeetingRtcEngineWrap::onVideoStateChanged(std::string device_id,
     bytertc::MediaDeviceState device_state, bytertc::MediaDeviceError error) {
 	emit instance().sigUpdateDevices();

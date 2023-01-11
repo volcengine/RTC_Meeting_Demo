@@ -141,7 +141,9 @@ public class CreateMeetingActivity extends BaseActivity implements View.OnClickL
 
         SolutionDemoEventManager.register(this);
 
-        mViewBinding.loginVersion.setText(String.format("Demo版本 v%1$s / SDK版本 %2$s", "", RTCEngine.getSdkVersion()));
+        mViewBinding.loginVersion.setText(String.format("App版本 v%1$s / SDK版本 %2$s",
+                SolutionDataManager.ins().getAppVersionName(),
+                RTCEngine.getSdkVersion()));
 
         updateAudioStatus(MeetingDataManager.getMicStatus());
         updateVideoStatus(MeetingDataManager.getCameraStatus());

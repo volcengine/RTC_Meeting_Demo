@@ -76,7 +76,6 @@ public class MeetingDataManager {
     private static boolean sMicStatus = true;
     private static boolean sCameraStatus = true;
     private static boolean sSpeakerStatus = false;
-    private static boolean sIsFrontCamera = true;
     private static boolean sIsRecordMeeting = false;
 
     private static final MeetingUserInfo sMyUserInfo = new MeetingUserInfo();
@@ -222,9 +221,6 @@ public class MeetingDataManager {
         if (isSelf(sScreenShareUid)) {
             stopScreenSharing();
         }
-        if (!sIsFrontCamera) {
-            switchCameraType(false);
-        }
         if (!sSpeakerStatus) {
             switchSpeaker();
         }
@@ -272,7 +268,7 @@ public class MeetingDataManager {
 
         MeetingRTCManager.ins().getRTSClient().updateMicStatus(sMeetingId, sMicStatus, null);
         SolutionDemoEventManager.post(new MicStatusChangeEvent(SolutionDataManager.ins().getUserId(), sMicStatus));
-        MeetingRTCManager.ins().muteLocalAudioStream(!sMicStatus);
+        MeetingRTCManager.ins().enableLocalAudio(sMicStatus);
     }
 
     public static void switchCamera(boolean isFromUser) {
@@ -691,7 +687,6 @@ public class MeetingDataManager {
         }
         if (sCameraStatus) {
             MeetingRTCManager.ins().switchCamera();
-            sIsFrontCamera = !sIsFrontCamera;
         }
     }
 
