@@ -108,6 +108,8 @@ export interface IMeetingState {
       [key: string]: any;
     };
   };
+  autoPlayFailUser: string[];
+  playStatus: { [key: string]: { audio: boolean; video: boolean } };
   //   users: any[];
 }
 

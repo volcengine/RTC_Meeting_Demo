@@ -1,6 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import chunk from 'lodash.chunk';
-import debounce from 'lodash.debounce';
+import React, { useEffect, useRef } from 'react';
 
 import styles from './index.less';
 
@@ -28,70 +26,73 @@ const getColCount = (total: number) => {
   return 1;
 };
 
-const GalleryView: React.FC<IGalleryViewProps> = ({ views }) => {
-  const [layout, updateLayout] = useState({
-    rows: getRowCount(views.length) || 1,
-    cols: getColCount(views.length) || 1,
-  });
+const setSize = (ele: HTMLElement, width: number, height: number) => {
+  ele.style.minWidth = `${width}px`;
+  ele.style.minHeight = `${height}px`;
+  ele.style.maxWidth = `${width}px`;
+  ele.style.maxHeight = `${height}px`;
+};
 
-  const updateView = useCallback(
-    // eslint-disable-line react-hooks/exhaustive-deps
-    debounce((len) => {
-      updateLayout({
-        rows: getRowCount(len),
-        cols: getColCount(len),
-      });
-    }, 500),
-    []
-  );
+const FLEX_GAP = 8;
+
+const GalleryView: React.FC<IGalleryViewProps> = ({ views }) => {
+  const layoutRef = useRef<HTMLDivElement>(null);
+  const playersRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const len = views.length;
-    if (len) {
-      updateView(len);
-    }
-    return () => {
-      updateView.cancel();
-    };
-  }, [views, updateView]);
+    const resize = () => {
+      const layoutDom = layoutRef.current!;
 
-  const renderViews = () => {
-    if (views.length) {
-      const groups = chunk(views, layout.cols);
-      const ret = [];
-      for (let i = 0; i < groups.length; i++) {
-        const row = (
-          <div
-            key={i}
-            className={styles.galleryRow}
-            style={{
-              height: `${100 / layout.rows}%`,
-            }}
-          >
-            {groups[i].map((view, i) => {
-              return (
-                <div
-                  className={styles.galleryView}
-                  key={(view as React.ReactElement)?.key || i}
-                  style={{
-                    padding: groups.length === 1 ? '0px' : '12px',
-                    width: `${100 / layout.cols}%`,
-                  }}
-                >
-                  {view}
-                </div>
-              );
-            })}
-          </div>
-        );
-        ret.push(row);
+      if (!layoutDom.offsetHeight) {
+        return;
       }
-      return ret;
-    }
-    return [];
-  };
 
-  return <div className={styles.galleryViewContainer}>{renderViews()}</div>;
+      const Height = layoutDom.offsetHeight;
+      const Width = layoutDom.offsetWidth;
+
+      const rows = getRowCount(views.length) || 1;
+      const cols = getColCount(views.length) || 1;
+
+      const w = (Width - (cols - 1) * FLEX_GAP) / cols;
+
+      const h = (Height - (rows - 1) * FLEX_GAP) / rows;
+      // 默认宽度有剩余可以放下16 / 9  的视频区
+      let eleHeight = h;
+      let eleWidth = (h / 9) * 16;
+      if (w / h < 16 / 9) {
+        eleWidth = w;
+        eleHeight = (w / 16) * 9;
+      }
+      Array.prototype.forEach.call(playersRef.current?.children, (ele) => {
+        setSize(ele as HTMLDivElement, eleWidth, eleHeight);
+      });
+    };
+
+    window.addEventListener('resize', resize);
+
+    if (layoutRef.current) {
+      resize();
+    }
+
+    return () => {
+      window.removeEventListener('resize', resize);
+    };
+  }, [views]);
+
+  return (
+    <div
+      className={styles.playerLayout}
+      style={{
+        width: '100%',
+        height: '100%',
+      }}
+      ref={layoutRef}
+    >
+      <div className={styles.playerContainer} ref={playersRef}>
+        {views}
+      </div>
+    </div>
+  );
 };
 
 export default GalleryView;

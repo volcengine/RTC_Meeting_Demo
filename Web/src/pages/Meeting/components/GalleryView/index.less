@@ -1,18 +1,17 @@
 @import '~@/utils/utils.less';
 
-.galleryViewContainer {
-  .flex-box();
-  flex-direction: column;
+.playerLayout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
+}
 
-  .galleryRow {
-    .flex-box();
-    justify-content: flex-start;
-    width: 100%;
-
-    .galleryView {
-      height: 100%;
-    }
-  }
+.playerContainer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }

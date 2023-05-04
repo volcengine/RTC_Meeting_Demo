@@ -169,7 +169,6 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
 
     const caseToDo = async (type: string) => {
       if (type === 'stream') {
-        console.log(streamConfigs);
         await engine.setVideoCaptureConfig({
           frameRate: streamConfigs.frameRate.max,
           ...streamConfigs.resolution,
@@ -219,7 +218,9 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
 
   const getHistoryVideoRecord = useCallback(() => {
     mc?.getHistoryVideoRecord().then((res) => {
-      setVideoList(res);
+      if (res) {
+        setVideoList(res);
+      }
       setLoading(false);
     });
   }, [mc]);
@@ -232,7 +233,7 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
 
   useEffect(() => {
     devicesEmu();
-    // getHistoryVideoRecord();
+    getHistoryVideoRecord();
 
     const handleVideoDeviceStateChanged = async (e: DeviceInfo) => {
       const devices = await devicesEmu();

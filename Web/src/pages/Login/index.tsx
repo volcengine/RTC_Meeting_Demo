@@ -193,7 +193,7 @@ export class Login extends Component<LoginProps, LoginState> {
                     if (!isProd) {
                       return Promise.resolve();
                     }
-                    const res = !/^[1][3,4,5,7,8,9][0-9]{9}$/.test(value);
+                    const res = !/^[1][3,4,5,6,7,8,9][0-9]{9}$/.test(value);
                     return this.validator(value, 'phoneErrType', res);
                   },
                 },

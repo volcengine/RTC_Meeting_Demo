@@ -203,7 +203,7 @@ export default class RtcClient {
               if (res.code === 200) {
                 resolve(res.response);
               } else {
-                reject(res.message);
+                reject(res);
               }
             }
           } catch (e) {
@@ -263,11 +263,14 @@ export default class RtcClient {
     videoInputs: MediaDeviceInfo[];
     audioPlaybackList: MediaDeviceInfo[];
   }> {
-    let audioInputs = await VERTC.enumerateAudioCaptureDevices();
-    let videoInputs = await VERTC.enumerateVideoCaptureDevices();
+    const devices = await VERTC.enumerateDevices();
 
-    audioInputs = audioInputs?.filter((i) => i.deviceId);
-    videoInputs = videoInputs?.filter((i) => i.deviceId);
+    const audioInputs = devices.filter(
+      (i) => i.deviceId && i.kind === 'audioinput'
+    );
+    const videoInputs = devices.filter(
+      (i) => i.deviceId && i.kind === 'videoinput'
+    );
 
     this._audioCaptureDevice =
       this._audioCaptureDevice || audioInputs?.[0]?.deviceId;
@@ -277,7 +280,9 @@ export default class RtcClient {
     return {
       audioInputs,
       videoInputs,
-      audioPlaybackList: await VERTC.enumerateAudioPlaybackDevices(),
+      audioPlaybackList: devices.filter(
+        (i) => i.deviceId && i.kind === 'audiooutput'
+      ),
     };
   }
 

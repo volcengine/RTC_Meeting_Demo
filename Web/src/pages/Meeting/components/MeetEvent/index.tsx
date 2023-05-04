@@ -1,4 +1,4 @@
-import { message, Skeleton } from 'antd';
+import { message, Skeleton, Modal } from 'antd';
 import { TOASTS } from '@/config';
 
 import type {
@@ -27,10 +27,16 @@ import VERTC, {
   LocalAudioPropertiesInfo,
   ConnectionStateChangeEvent,
   ConnectionState,
+  AutoPlayFailedEvent,
+  PlayerEvent,
 } from '@volcengine/rtc';
-import { MediaPlayer } from '../MediaPlayer';
-import MeetingViews from '../MeetingViews';
-import StreamStats from '../StreamStats';
+import {
+  MediaPlayer,
+  MeetingViews,
+  StreamStats,
+  AutoPlayModal,
+} from '../index';
+import { getReleativeSortedList } from './utils';
 
 interface IEvent {
   end: () => void;
@@ -59,6 +65,8 @@ const initState = {
     localScreen: undefined,
     remoteStreams: {},
   },
+  autoPlayFailUser: [],
+  playStatus: {},
   //   users: [],
 };
 
@@ -76,6 +84,8 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
   }
 
   deviceLib = new DeviceController(this.props);
+  messageArray: UserMessageEvent[] = [];
+  messageWait = false;
 
   get roomId(): string {
     return (
@@ -110,19 +120,6 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
 
     document.addEventListener('visibilitychange', this.handleMeetingStatus);
     this.addRTCEngineEventListener();
-
-    // todo: recheck
-    // history.listen((location, action) => {
-    //   console.log('history.listen', location, action);
-
-    //   if (action === 'POP') {
-    //     if (location.pathname === '/meeting') {
-    //       this.setState({
-    //         refresh: true,
-    //       });
-    //     }
-    //   }
-    // });
   }
 
   componentWillUnmount(): void {
@@ -171,10 +168,6 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
     );
 
     this.props.rtc?.engine.on(VERTC.events.onTrackEnded, this.handleTrackEnd);
-    this.props.rtc?.engine.on(
-      VERTC.events.onConnectionStateChanged,
-      this.handleConnectionStateChanged
-    );
 
     // rts
     this.props.rtc.engine.on(
@@ -188,6 +181,21 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
     this.props.rtc.engine.on(
       VERTC.events.onUserMessageReceived,
       this.handleRoomMessageReceived
+    );
+
+    this.props.rtc.engine.on(
+      VERTC.events.onConnectionStateChanged,
+      this.handleReconnect
+    );
+
+    this.props.rtc.engine.on(
+      VERTC.events.onAutoplayFailed,
+      this.handleAutoPlayFail
+    );
+
+    this.props.rtc.engine.on(
+      VERTC.events.onPlayerEvent,
+      this.handlePlayerEvent
     );
   };
 
@@ -232,10 +240,6 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
     );
 
     this.props.rtc?.engine.off(VERTC.events.onTrackEnded, this.handleTrackEnd);
-    this.props.rtc?.engine.off(
-      VERTC.events.onConnectionStateChanged,
-      this.handleConnectionStateChanged
-    );
 
     // rts
     this.props.rtc.engine.off(
@@ -249,6 +253,21 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
     this.props.rtc.engine.off(
       VERTC.events.onUserMessageReceived,
       this.handleRoomMessageReceived
+    );
+
+    this.props.rtc.engine.off(
+      VERTC.events.onConnectionStateChanged,
+      this.handleReconnect
+    );
+
+    this.props.rtc.engine.off(
+      VERTC.events.onAutoplayFailed,
+      this.handleAutoPlayFail
+    );
+
+    this.props.rtc.engine.off(
+      VERTC.events.onPlayerEvent,
+      this.handlePlayerEvent
     );
   };
 
@@ -270,7 +289,41 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
     this.props.setMeetingUsers(users);
   };
 
-  handleRoomMessageReceived = (e: UserMessageEvent) => {
+  messageHandler = (e: UserMessageEvent) => {
+    try {
+      this.messageArray.push(e);
+      if (this.messageWait) {
+        return;
+      }
+
+      this.messageWait = true;
+      setTimeout(() => {
+        this.messageArray = this.messageArray.sort((a, b) => {
+          const clone_a = { ...a };
+          const clone_b = { ...b };
+          return (
+            JSON.parse(clone_a.message).timestamp -
+            JSON.parse(clone_b.message).timestamp
+          );
+        });
+        this.messageArray?.forEach((e) => {
+          this.handleRoomMessageReceived(e, true);
+        });
+        this.messageArray = [];
+        this.messageWait = false;
+      }, 200);
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+
+  handleRoomMessageReceived = (e: UserMessageEvent, force = false) => {
+    this.messageHandler(e);
+
+    if (!force) {
+      return;
+    }
+
     const { userId, message: msg } = e;
     if (userId !== 'server') {
       return;
@@ -317,16 +370,18 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
         if (_curUsers.some((user) => user.user_id === payload.user_id)) {
           console.error('onUserJoinMeeting 该用户 %s 已存在', payload.user_id);
         } else {
-          const curMeetingUsers = [..._curUsers, payload];
-
           this.props.setMeetingUsers([..._curUsers, payload]);
         }
       } else if (res.event === 'onUserLeaveMeeting') {
-        const users = this.props.meeting.meetingUsers.filter(
+        const _curUsers = this.props.meeting.meetingUsers;
+
+        const curMeetingUsers = _curUsers.filter(
           (user) => user.user_id !== payload.user_id
         );
 
-        this.props.setMeetingUsers(users);
+        this.props.setMeetingUsers(curMeetingUsers);
+
+        this.checkAutoPlayFailUser(payload.user_id);
       } else if (res.event === 'onShareScreenStatusChanged') {
         if (payload.status) {
           this.props.setViewMode(ViewMode.SpeakerView);
@@ -483,6 +538,8 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
     const meetInfo = this.props.meeting.meetingInfo;
     const host_id = meetInfo.host_id;
 
+    const lastSortList = this.props.meeting.meetingInfo.volumeSortList;
+
     for (const speaker of event) {
       if (speaker.streamKey.userId !== this.props.currentUser.userId) {
         if (speaker.streamKey.streamIndex === StreamIndex.STREAM_INDEX_MAIN) {
@@ -493,7 +550,10 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
         }
       }
     }
-    const sortList = otherSpeakers.sort((a: IVolume, b: IVolume) => {
+
+    const keepSortedList = getReleativeSortedList(lastSortList, otherSpeakers);
+
+    const sortList = keepSortedList.sort((a: IVolume, b: IVolume) => {
       if (a.userId === host_id) {
         // a before b
         return -1;
@@ -542,22 +602,121 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
     }
   };
 
-  handleConnectionStateChanged = async (event: ConnectionStateChangeEvent) => {
-    const { state } = event;
+  _handleLeave = async () => {
+    this.props.setMeetingStatus('end');
+    await this.props.rtc.leave();
+    this.props.rtc.removeEventListener();
 
-    if (state === ConnectionState.CONNECTION_STATE_RECONNECTED) {
-      const res = await this.props.mc?.reconnect();
-      //   todo 需要退房
+    await this.props.rtc.engine.stopAudioCapture();
+    await this.props.rtc.engine.stopVideoCapture();
+    await this.props.rtc.engine.stopScreenCapture();
+    this.props.rtc.engine.unpublishScreen(MediaType.AUDIO_AND_VIDEO);
+
+    history.push(`/?roomId=${this.roomId}`);
+  };
+
+  handleReconnect = async (e: ConnectionStateChangeEvent) => {
+    if (e.state === ConnectionState.CONNECTION_STATE_RECONNECTED) {
+      const res = await this.props.mc?.reconnect().catch((err) => {
+        console.log('reconnect err:', err);
+
+        if (err.code === 404) {
+          message.error('断线时间过长，无法重连');
+          this._handleLeave();
+        }
+      });
+
+      console.log('reconnect res:', res);
 
       if (res?.code === 418) {
-        message.error('断线时间过长，流已经被清理/流正常，无法重连');
+        message.error('断线时间过长，无法重连');
+        this._handleLeave();
       }
 
       if (res?.code === 422) {
         message.error('会议已经结束');
+        this._handleLeave();
       }
     }
   };
+
+  handleAutoPlayFail = async (event: AutoPlayFailedEvent) => {
+    const { userId, kind } = event;
+    let playUser = this.state.playStatus[userId] || {};
+    playUser = { ...playUser, [kind]: false };
+    this.state.playStatus[userId] = playUser;
+
+    this.setState({
+      playStatus: { ...this.state.playStatus },
+    });
+
+    this.addFailUser(event.userId);
+  };
+
+  addFailUser(userId: string) {
+    const { autoPlayFailUser } = this.state;
+    const index = autoPlayFailUser.findIndex((item) => item === userId);
+    if (index === -1) {
+      autoPlayFailUser.push(userId);
+    }
+    this.setState({
+      autoPlayFailUser: [...autoPlayFailUser],
+    });
+  }
+
+  playerFail(params: { type: 'audio' | 'video'; userId: string }) {
+    const { type, userId } = params;
+
+    let playUser = this.state.playStatus[userId] || {};
+    playUser = { ...playUser, [type]: false };
+
+    const { audio, video } = playUser;
+
+    if (audio === false || video === false) {
+      this.addFailUser(userId);
+    }
+
+    return playUser;
+  }
+
+  handlePlayerEvent = (event: PlayerEvent) => {
+    const { userId, rawEvent, type } = event;
+    let playUser = this.state.playStatus[userId] || {};
+    if (rawEvent.type === 'playing') {
+      playUser = { ...playUser, [type]: true };
+      const { audio, video } = playUser;
+      if (audio !== false && video !== false) {
+        this.checkAutoPlayFailUser(userId);
+      }
+    } else if (rawEvent.type === 'pause') {
+      playUser = this.playerFail({ type, userId });
+    }
+
+    this.setState({
+      playStatus: { ...this.state.playStatus, [userId]: playUser },
+    });
+  };
+
+  handleAutoPlay = () => {
+    const users: string[] = this.state.autoPlayFailUser;
+    if (users && users.length) {
+      users.forEach((user) => {
+        this.props.rtc?.engine.play(user);
+      });
+    }
+    this.setState({
+      autoPlayFailUser: [],
+    });
+  };
+
+  checkAutoPlayFailUser(userId: string) {
+    const autoPlayFailUser = this.state.autoPlayFailUser.filter(
+      (item) => item !== userId
+    );
+    this.setState({
+      autoPlayFailUser: [...autoPlayFailUser],
+    });
+  }
 
   joinMeeting = () => {
     const {
@@ -607,8 +766,6 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
                 user_id: userId,
               })
               .then((res: any) => {
-                console.log('getMeetingUserInfo', res);
-
                 this.props.setMeetingUsers(res);
               });
           }, 1000);
@@ -641,14 +798,17 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
           }
           // 监听音量变化
           this.props.rtc?.engine.enableAudioPropertiesReport({
-            interval: 1000,
+            interval: 2000,
           });
         });
       })
       .catch((e: any) => {
-        message.error(`Join meeting failed: ${e || 'unknown'}`);
-
-        if (e === 'login token expired' || e === 'login first') {
+        message.error(`Join meeting failed: ${e?.message || 'unknown'}`);
+        console.error(e);
+        if (
+          e?.message === 'login token expired' ||
+          e?.message === 'login first'
+        ) {
           Utils.removeLoginInfo();
           history.push('/login');
         } else {
@@ -674,6 +834,10 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
           remoteStreams={state.remoteStreams}
         />
         <StreamStats streamStatses={state.streamStatses} />
+        <AutoPlayModal
+          handleAutoPlay={this.handleAutoPlay}
+          autoPlayFailUser={state.autoPlayFailUser}
+        />
       </>
     );
   }

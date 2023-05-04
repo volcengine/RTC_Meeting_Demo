@@ -15,17 +15,17 @@ export const DEFAULTCONFIG = {
 };
 
 export const RESOLUTIOIN_LIST = [
-  {
-    text: '160 * 160',
-    val: {
-      width: 160,
-      height: 160,
-    },
-    bitrateRange: {
-      min: 40,
-      max: 150,
-    },
-  },
+  //   {
+  //     text: '160 * 160',
+  //     val: {
+  //       width: 160,
+  //       height: 160,
+  //     },
+  //     bitrateRange: {
+  //       min: 40,
+  //       max: 150,
+  //     },
+  //   },
   {
     text: '320 * 180',
     val: {
@@ -37,17 +37,17 @@ export const RESOLUTIOIN_LIST = [
       max: 350,
     },
   },
-  {
-    text: '320 * 240',
-    val: {
-      width: 320,
-      height: 240,
-    },
-    bitrateRange: {
-      min: 100,
-      max: 400,
-    },
-  },
+  //   {
+  //     text: '320 * 240',
+  //     val: {
+  //       width: 320,
+  //       height: 240,
+  //     },
+  //     bitrateRange: {
+  //       min: 100,
+  //       max: 400,
+  //     },
+  //   },
   {
     text: '640 * 360',
     val: {
@@ -59,39 +59,39 @@ export const RESOLUTIOIN_LIST = [
       max: 1000,
     },
   },
-  {
-    text: '480 * 480',
-    val: {
-      width: 480,
-      height: 480,
-    },
-    bitrateRange: {
-      min: 200,
-      max: 1000,
-    },
-  },
-  {
-    text: '640 * 480',
-    val: {
-      width: 640,
-      height: 480,
-    },
-    bitrateRange: {
-      min: 250,
-      max: 1000,
-    },
-  },
-  {
-    text: '960 * 540',
-    val: {
-      width: 960,
-      height: 540,
-    },
-    bitrateRange: {
-      min: 400,
-      max: 1600,
-    },
-  },
+  //   {
+  //     text: '480 * 480',
+  //     val: {
+  //       width: 480,
+  //       height: 480,
+  //     },
+  //     bitrateRange: {
+  //       min: 200,
+  //       max: 1000,
+  //     },
+  //   },
+  //   {
+  //     text: '640 * 480',
+  //     val: {
+  //       width: 640,
+  //       height: 480,
+  //     },
+  //     bitrateRange: {
+  //       min: 250,
+  //       max: 1000,
+  //     },
+  //   },
+  //   {
+  //     text: '960 * 540',
+  //     val: {
+  //       width: 960,
+  //       height: 540,
+  //     },
+  //     bitrateRange: {
+  //       min: 400,
+  //       max: 1600,
+  //     },
+  //   },
   {
     text: '1280 * 720',
     val: {

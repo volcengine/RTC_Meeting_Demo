@@ -164,9 +164,18 @@ class MettingController extends EventEmitter {
     });
   }
 
-  public startShareScreen(): Promise<null> {
-    return this.rtc.sendServerMessage('startShareScreen', {
-      login_token: Utils.getLoginToken(),
+  public startShareScreen(): Promise<{ code: number }> {
+    return new Promise((resolve, reject) => {
+      this.rtc
+        .sendServerMessage('startShareScreen', {
+          login_token: Utils.getLoginToken(),
+        })
+        .then((res) => {
+          resolve(res as { code: number });
+        })
+        .catch((err) => {
+          reject(err);
+        });
     });
   }
 
@@ -239,7 +248,7 @@ class MettingController extends EventEmitter {
   }
 
   public reconnect(): Promise<{ code: number }> {
-    return this.rtc.sendServerMessage('updateRecordLayout', {
+    return this.rtc.sendServerMessage('reconnect', {
       login_token: Utils.getLoginToken(),
     });
   }

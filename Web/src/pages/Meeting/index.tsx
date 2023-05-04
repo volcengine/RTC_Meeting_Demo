@@ -9,6 +9,7 @@ import MeetingEvent from '@/pages/Meeting/components/MeetEvent';
 import { injectProps } from '@/pages/Meeting/configs/config';
 
 import styles from './index.less';
+import { MediaType } from '@volcengine/rtc';
 
 /**
  * @param drawerVisible 用户列表抽屉是否可见
@@ -44,12 +45,12 @@ class Meeting extends Component<MeetingProps, MeetingState> {
 
   componentDidMount = (): void => {
     Utils.checkMediaState();
-    window.addEventListener('beforeunload', this.unMount);
+    window.addEventListener('pagehide', this.unMount);
   };
 
   componentWillUnmount() {
     this.unMount();
-    window.removeEventListener('beforeunload', this.unMount);
+    window.removeEventListener('pagehide', this.unMount);
   }
 
   componentDidUpdate(prevProps: MeetingProps, preState: MeetingState): void {
@@ -84,6 +85,8 @@ class Meeting extends Component<MeetingProps, MeetingState> {
     // window.open(`/?roomId=${this.roomId}`, '_self');
     await this.props.rtc.engine.stopAudioCapture();
     await this.props.rtc.engine.stopVideoCapture();
+    await this.props.rtc.engine.stopScreenCapture();
+    this.props.rtc.engine.unpublishScreen(MediaType.AUDIO_AND_VIDEO);
 
     history.push(`/?roomId=${this.roomId}`);
   };

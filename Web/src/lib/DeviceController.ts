@@ -127,7 +127,7 @@ class DeviceController {
     },
     isShare: boolean
   ): void {
-    const { meeting, settings } = param;
+    const { meeting } = param;
 
     if (isShare && meeting.isSharing && meeting.meetingInfo.screen_shared_uid) {
       message.warn('当前有人正在分享，请等待结束后再开启');
@@ -138,10 +138,21 @@ class DeviceController {
 
       this.props.rtc.createScreenStream(
         () => {
-          this.props.setIsSharing(isShare);
-          this.props.setMeetingIsSharing(true);
-          this.props.mc?.startShareScreen();
-          this.props.rtc.engine.publishScreen(MediaType.AUDIO_AND_VIDEO);
+          this.props.mc
+            ?.startShareScreen()
+            .then(() => {
+              this.props.setIsSharing(isShare);
+              this.props.setMeetingIsSharing(true);
+              this.props.rtc.engine.publishScreen(MediaType.AUDIO_AND_VIDEO);
+            })
+            .catch((err) => {
+              if ((err as { code: number }).code === 412) {
+                message.warn('当前有人正在分享，请等待结束后再开启');
+                this.props.rtc.destoryScreenStream(() => {
+                  console.log('有人共享时，停止屏幕捕获');
+                });
+              }
+            });
         },
         (err: {
           error: { code: number; message: string; name: string };

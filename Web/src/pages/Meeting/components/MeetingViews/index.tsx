@@ -54,6 +54,15 @@ const MeetingViews: React.FC<MeetingViewsProps> = (props) => {
   useEffect(() => {
     const volumeSortList = meeting.meetingInfo.volumeSortList;
 
+    const otherSpeakers = meeting.meetingUsers.filter(
+      (user) => user.user_id !== currentUser.userId
+    );
+
+    if (!otherSpeakers?.length) {
+      updateActiveUsersViews([]);
+      return;
+    }
+
     if (volumeSortList?.length) {
       //按声音大小来排序
       const activeUsersViews = volumeSortList.map(({ userId, volume }) => {

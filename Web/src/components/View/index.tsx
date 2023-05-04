@@ -1,11 +1,16 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Tooltip } from 'antd';
+import classnames from 'classnames';
+
 import { v4 as uuid } from 'uuid';
 import { useSize } from '@umijs/hooks';
 import type { ActiveMeetingUser } from '@/pages/Meeting/components/MeetingViews';
 import shareOffIcon from '/assets/images/shareOffIcon.png';
-import styles from './index.less';
+import micVolumeIon from '/assets/images/micWithVolume.png';
+import micOffIcon from '/assets/images/micOffIcon.png';
+import micOnIcon from '/assets/images/micOnIcon.png';
 
+import styles from './index.less';
 type IViewProps = ActiveMeetingUser & {
   avatarOnCamOff?: React.ReactElement;
   sharingId?: string;
@@ -27,6 +32,7 @@ const View: React.FC<IViewProps> = ({
   volume,
   player,
   sharingView,
+  room_id,
 }) => {
   const [id] = useState<string>(uuid());
   const [layoutSize, containerRef] = useSize<HTMLDivElement>();
@@ -76,13 +82,33 @@ const View: React.FC<IViewProps> = ({
               lineHeight: `${avatarSize}px`,
               fontSize: avatarSize / 2,
               fontWeight: 600,
-              border: hasVolume() && speaking ? '1px solid #3370FF' : 'none',
+              border:
+                hasVolume() && speaking
+                  ? '1px solid #A0C0FF'
+                  : '1px solid transparent',
             }}
           >
             {avatarOnCamOff ? avatarOnCamOff : username[0]}
           </div>
 
           <div className={styles.username}>
+            {room_id && (
+              <img
+                src={
+                  hasVolume() && speaking
+                    ? micVolumeIon
+                    : isMicOn
+                    ? micOnIcon
+                    : micOffIcon
+                }
+                alt={`camera-${hasVolume() ? 'on' : 'off'}`}
+                style={{
+                  width: 16,
+                  height: 16,
+                  marginRight: 4,
+                }}
+              />
+            )}
             <Tooltip title={username}>
               {username.length > 10 ? `${username.slice(0, 10)}...` : username}
             </Tooltip>
@@ -98,7 +124,7 @@ const View: React.FC<IViewProps> = ({
     <div
       className={styles.viewContainer}
       ref={containerRef}
-      style={{ border: hasVolume() && speaking ? '1px solid #3370FF' : 'none' }}
+      //   style={{ border: hasVolume() && speaking ? '1px solid #A0C0FF' : 'none' }}
     >
       {render()}
 
@@ -107,6 +133,10 @@ const View: React.FC<IViewProps> = ({
         id={id}
         style={{
           display: sharingView || isCameraOn ? 'block' : 'none',
+          border:
+            hasVolume() && speaking
+              ? '1px solid #A0C0FF'
+              : '1px solid transparent',
         }}
       >
         {player}
@@ -115,6 +145,23 @@ const View: React.FC<IViewProps> = ({
             <img src={shareOffIcon} style={{ width: 14 }} />
           )}
           &nbsp;
+          {room_id && (
+            <img
+              src={
+                hasVolume() && speaking
+                  ? micVolumeIon
+                  : isMicOn
+                  ? micOnIcon
+                  : micOffIcon
+              }
+              alt={`camera-${hasVolume() ? 'on' : 'off'}`}
+              style={{
+                width: !hasVolume() ? 12 : 16,
+                height: 16,
+                marginRight: 4,
+              }}
+            />
+          )}
           {username}
           {me && <span className={styles.me}>我</span>}
           {isHost && <span className={styles.me}>主持人</span>}

@@ -12,7 +12,7 @@ const BasicLayout: React.FC = (props) => {
       <Header className={styles.title}>
         <Logo />
         <span className={styles.version}>
-          Demo版本 V1.0.1 / SDK版本 v{VERTC.getSdkVersion()}
+          Demo版本 V1.1.1 / SDK版本 v{VERTC.getSdkVersion()}
         </span>
       </Header>
       <Content className={styles.content}>{props.children}</Content>

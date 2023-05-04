@@ -18,29 +18,34 @@ const ShareViewWithRTC: React.FC<{
       rtc.setLocalVideoPlayer(StreamIndex.STREAM_INDEX_SCREEN, undefined);
       rtc.setLocalVideoPlayer(StreamIndex.STREAM_INDEX_SCREEN, 'screen-player');
     } else {
-      rtc.setRemoteVideoPlayer(
-        StreamIndex.STREAM_INDEX_SCREEN,
-        sharingUser.user_id,
-        undefined
-      );
-      rtc.setRemoteVideoPlayer(
-        StreamIndex.STREAM_INDEX_SCREEN,
-        sharingUser.user_id,
-        'screen-player'
-      );
+      if (sharingUser?.user_id) {
+        rtc.setRemoteVideoPlayer(
+          StreamIndex.STREAM_INDEX_SCREEN,
+          sharingUser.user_id,
+          undefined
+        );
+        rtc.setRemoteVideoPlayer(
+          StreamIndex.STREAM_INDEX_SCREEN,
+          sharingUser.user_id,
+          'screen-player'
+        );
+      }
+
       //   }
     }
 
     return () => {
       rtc.setLocalVideoPlayer(StreamIndex.STREAM_INDEX_SCREEN, undefined);
 
-      rtc.setRemoteVideoPlayer(
-        StreamIndex.STREAM_INDEX_SCREEN,
-        sharingUser.user_id,
-        undefined
-      );
+      if (sharingUser?.user_id) {
+        rtc.setRemoteVideoPlayer(
+          StreamIndex.STREAM_INDEX_SCREEN,
+          sharingUser.user_id,
+          undefined
+        );
+      }
     };
-  }, [me, rtc, sharingUser.user_id]);
+  }, [me, rtc, sharingUser?.user_id]);
 
   return (
     <div

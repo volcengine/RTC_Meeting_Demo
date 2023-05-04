@@ -7,6 +7,7 @@ import MeetingViews from './MeetingViews';
 import SpeakerView from './SpeakerView';
 import StreamStats from './StreamStats';
 import UsersDrawer from './UsersDrawer';
+import AutoPlayModal from './AutoPlayModal';
 
 export {
   ControlBar,
@@ -20,4 +21,5 @@ export {
   SpeakerView,
   StreamStats,
   UsersDrawer,
+  AutoPlayModal
 };
