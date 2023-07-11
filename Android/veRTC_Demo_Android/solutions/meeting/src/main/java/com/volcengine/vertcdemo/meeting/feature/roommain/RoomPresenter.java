@@ -1,3 +1,6 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.feature.roommain;
 
 import android.app.Activity;
@@ -11,15 +14,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Lifecycle;
 
 import com.ss.bytertc.engine.VideoEncoderConfig;
-import com.ss.video.rtc.demo.basic_module.ui.CommonDialog;
-import com.ss.video.rtc.demo.basic_module.utils.SafeToast;
-import com.volcengine.vertcdemo.meeting.core.MeetingDataManager;
-import com.volcengine.vertcdemo.meeting.core.MeetingRTCManager;
+import com.volcengine.vertcdemo.common.SolutionCommonDialog;
+import com.volcengine.vertcdemo.common.SolutionToast;
 import com.volcengine.vertcdemo.core.net.IRequestCallback;
 import com.volcengine.vertcdemo.core.net.rts.RTSBizResponse;
+import com.volcengine.vertcdemo.meeting.R;
+import com.volcengine.vertcdemo.meeting.core.MeetingDataManager;
+import com.volcengine.vertcdemo.meeting.core.MeetingRTCManager;
 import com.volcengine.vertcdemo.meeting.feature.participant.ParticipantActivity;
 import com.volcengine.vertcdemo.meeting.feature.settings.SettingsActivity;
-import com.volcengine.vertcdemo.meeting.R;
 
 public class RoomPresenter {
 
@@ -66,7 +69,7 @@ public class RoomPresenter {
             if (MeetingDataManager.isSelf(uid)) {
                 MeetingDataManager.stopScreenSharing();
             } else {
-                SafeToast.show("屏幕共享发起失败，请提示前一位参会者结束共享");
+                SolutionToast.show("屏幕共享发起失败，请提示前一位参会者结束共享");
             }
         } else {
             MeetingDataManager.startScreenSharing(mRoomActivity);
@@ -85,7 +88,7 @@ public class RoomPresenter {
             if (MeetingDataManager.isSelfHost()) {
                 MeetingDataManager.startMeetingRecord();
             } else {
-                SafeToast.show("如需录制会议，请提醒主持人开启录制。");
+                SolutionToast.show("如需录制会议，请提醒主持人开启录制。");
             }
         }
     }
@@ -193,7 +196,7 @@ public class RoomPresenter {
         if (MeetingDataManager.getMicStatus()) {
             return;
         }
-        CommonDialog dialog = new CommonDialog(activity);
+        SolutionCommonDialog dialog = new SolutionCommonDialog(activity);
         dialog.setMessage(activity.getString(R.string.on_ask_open_mic));
         dialog.setPositiveListener(v -> {
             if (!MeetingDataManager.getMicStatus()) {

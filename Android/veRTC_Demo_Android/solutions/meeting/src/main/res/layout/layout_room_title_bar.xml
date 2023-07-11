@@ -3,17 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/room_title_bar_layout"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/title_bar_height"
+    android:layout_height="50dp"
     tools:background="@color/main_background"
     tools:ignore="ContentDescription">
 
     <ImageView
         android:id="@+id/room_switch_camera"
-        android:layout_width="@dimen/title_bar_icon_width"
-        android:layout_height="@dimen/title_bar_icon_height"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="@dimen/title_bar_icon_margin"
-        android:padding="@dimen/title_bar_icon_padding"
+        android:layout_marginLeft="10dp"
+        android:padding="12dp"
         android:src="@drawable/switch_camera" />
 
     <LinearLayout
@@ -28,7 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:textSize="@dimen/txt_H1_18sp"
+            android:textSize="18sp"
             android:text="ID:" />
 
         <TextView
@@ -36,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:textSize="@dimen/txt_H1_18sp"
+            android:textSize="18sp"
             tools:text="0907" />
 
         <View
@@ -51,18 +51,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:textColor="@color/gray_4"
-            android:textSize="@dimen/txt_H5_12sp"
+            android:textColor="#C1C1C1"
+            android:textSize="12sp"
             tools:text="29:22" />
     </LinearLayout>
 
     <ImageView
         android:id="@+id/room_leave_meeting"
-        android:layout_width="@dimen/title_bar_icon_width"
-        android:layout_height="@dimen/title_bar_icon_height"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:layout_marginRight="@dimen/title_bar_icon_margin"
-        android:padding="@dimen/title_bar_icon_padding"
+        android:layout_marginRight="10dp"
+        android:padding="12dp"
         android:src="@drawable/leave_meeting" />
 </RelativeLayout>

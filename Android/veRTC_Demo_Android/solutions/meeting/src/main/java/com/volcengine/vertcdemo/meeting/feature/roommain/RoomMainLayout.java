@@ -1,3 +1,6 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.feature.roommain;
 
 import android.content.Context;
@@ -8,7 +11,8 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.ss.video.rtc.demo.basic_module.utils.Utilities;
+import com.volcengine.vertcdemo.utils.AppUtil;
+import com.volcengine.vertcdemo.utils.Utils;
 import com.volcengine.vertcdemo.meeting.core.MeetingDataManager;
 import com.volcengine.vertcdemo.meeting.bean.MeetingUserInfo;
 
@@ -65,7 +69,7 @@ public class RoomMainLayout extends FrameLayout {
         mSecondUserInfo = null;
         mMeetingUserInfoList.clear();
         for (int i = 0; i < 6; i++) {
-            UserWindowLayout layout = new UserWindowLayout(Utilities.getApplicationContext());
+            UserWindowLayout layout = new UserWindowLayout(AppUtil.getApplicationContext());
             mUserWindowLayoutList.add(layout);
             addView(layout);
             layout.bind(null);
@@ -132,7 +136,7 @@ public class RoomMainLayout extends FrameLayout {
             first.setLayoutParams(params);
             first.bind(firstInfo);
             if (first.getParent() == null || first.getParent() != this) {
-                Utilities.removeFromParent(first);
+                Utils.removeFromParent(first);
                 addView(first);
             }
             goneStartIndex = 1;
@@ -146,7 +150,7 @@ public class RoomMainLayout extends FrameLayout {
             first.setLayoutParams(paramsFirst);
             first.bind(firstInfo);
             if (first.getParent() == null || first.getParent() != this) {
-                Utilities.removeFromParent(first);
+                Utils.removeFromParent(first);
                 addView(first);
             }
 
@@ -159,7 +163,7 @@ public class RoomMainLayout extends FrameLayout {
             second.setLayoutParams(paramsSecond);
             second.bind(secondInfo);
             if (second.getParent() == null || second.getParent() != this) {
-                Utilities.removeFromParent(second);
+                Utils.removeFromParent(second);
                 addView(second);
             }
             goneStartIndex = 2;
@@ -172,7 +176,7 @@ public class RoomMainLayout extends FrameLayout {
         paramsScreen.setMargins(0, viewHeight, 0, 0);
         mSpeechLayout.setLayoutParams(paramsScreen);
         if (mSpeechLayout.getParent() == null || mSpeechLayout.getParent() != this) {
-            Utilities.removeFromParent(mSpeechLayout);
+            Utils.removeFromParent(mSpeechLayout);
             addView(mSpeechLayout);
         }
         UserWindowLayout layout;

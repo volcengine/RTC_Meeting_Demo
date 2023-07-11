@@ -48,7 +48,7 @@
             android:lines="1"
             android:maxLines="1"
             android:singleLine="true"
-            android:textColor="@color/gray_11"
+            android:textColor="@android:color/white"
             android:textColorHint="#86909C" />
 
         <View
@@ -62,8 +62,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="@string/login_input_meeting_id_waring"
-            android:textColor="@color/waring_normal"
-            android:textSize="@dimen/txt_H3_14sp"
+            android:textColor="#F65656"
+            android:textSize="14sp"
             android:visibility="invisible" />
 
         <EditText
@@ -75,7 +75,7 @@
             android:lines="1"
             android:maxLines="1"
             android:singleLine="true"
-            android:textColor="@color/gray_11"
+            android:textColor="@android:color/white"
             android:textColorHint="#86909C" />
 
         <View
@@ -89,8 +89,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="@string/login_input_meeting_id_waring"
-            android:textColor="@color/waring_normal"
-            android:textSize="@dimen/txt_H3_14sp"
+            android:textColor="#F65656"
+            android:textSize="14sp"
             android:visibility="invisible" />
     </LinearLayout>
 

@@ -6,16 +6,17 @@
     android:fitsSystemWindows="true"
     tools:background="#000">
 
-    <include
-        android:id="@+id/users_title_bar_layout"
-        layout="@layout/layout_title_bar" />
+    <com.volcengine.vertcdemo.common.CommonTitleLayout
+        android:id="@+id/title_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/users_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/users_mute_all_users"
-        android:layout_below="@+id/users_title_bar_layout" />
+        android:layout_below="@+id/title_bar_layout" />
 
     <LinearLayout
         android:id="@+id/users_mute_all_users"

@@ -28,7 +28,7 @@
 
     <string name="login_duplicate_login">相同ID的用户登录，您已被强制下线</string>
 
-    <string name="login_limited_service">本产品仅用于功能体验，单次会议时长不超过10分钟</string>
+    <string name="login_limited_service">本产品仅用于功能体验，单次会议时长不超过20分钟</string>
 
     <string name="login_input_meeting_id_waring">输入长度不能超过18位</string>
     <string name="login_input_wrong_content_waring">请输入数字、英文字母或符号@_-</string>

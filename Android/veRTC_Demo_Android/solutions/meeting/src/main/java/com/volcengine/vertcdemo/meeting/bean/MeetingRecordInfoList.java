@@ -1,6 +1,9 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.bean;
 
-import com.ss.video.rtc.demo.basic_module.utils.GsonUtils;
+import com.volcengine.vertcdemo.common.GsonUtils;
 import com.volcengine.vertcdemo.core.net.rts.RTSBizResponse;
 
 import java.util.ArrayList;

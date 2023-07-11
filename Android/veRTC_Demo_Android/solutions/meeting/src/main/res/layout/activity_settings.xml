@@ -11,44 +11,45 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <include
+        <com.volcengine.vertcdemo.common.CommonTitleLayout
             android:id="@+id/room_title_bar_layout"
-            layout="@layout/layout_title_bar" />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
         <include
             android:id="@+id/settings_video_resolution"
-            layout="@layout/layout_meeting_item_arrow" />
+            layout="@layout/layout_common_item_arrow" />
 
         <include
             android:id="@+id/settings_video_frame_rate"
-            layout="@layout/layout_meeting_item_arrow" />
+            layout="@layout/layout_common_item_arrow" />
 
         <include
             android:id="@+id/settings_video_bit_rate"
-            layout="@layout/layout_meeting_item_arrow" />
+            layout="@layout/layout_common_item_arrow" />
 
         <include
             android:id="@+id/settings_screen_resolution"
-            layout="@layout/layout_meeting_item_arrow" />
+            layout="@layout/layout_common_item_arrow" />
 
         <include
             android:id="@+id/settings_screen_frame_rate"
-            layout="@layout/layout_meeting_item_arrow" />
+            layout="@layout/layout_common_item_arrow" />
 
         <include
             android:id="@+id/settings_screen_bit_rate"
-            layout="@layout/layout_meeting_item_arrow" />
+            layout="@layout/layout_common_item_arrow" />
 
         <include
             android:id="@+id/settings_video_log"
-            layout="@layout/layout_meeting_item_switch" />
+            layout="@layout/layout_common_item_switch" />
 
         <include
             android:id="@+id/settings_history_meetings"
-            layout="@layout/layout_meeting_item_arrow" />
+            layout="@layout/layout_common_item_arrow" />
 
         <include
             android:id="@+id/settings_my_history_meetings"
-            layout="@layout/layout_meeting_item_arrow" />
+            layout="@layout/layout_common_item_arrow" />
     </LinearLayout>
 </FrameLayout>

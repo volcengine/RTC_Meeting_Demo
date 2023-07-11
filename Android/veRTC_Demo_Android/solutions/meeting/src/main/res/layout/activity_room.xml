@@ -12,7 +12,7 @@
         android:id="@+id/layout_room_title_bar"
         layout="@layout/layout_room_title_bar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/title_bar_height" />
+        android:layout_height="50dp" />
 
     <com.volcengine.vertcdemo.meeting.feature.roommain.RoomMainLayout
         android:id="@+id/layout_room_main"

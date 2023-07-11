@@ -49,20 +49,20 @@
 
 ### 步骤 5：构建工程
 
-1. 打开终端窗口，进入 `RTC_Meeting_Demo/iOS/veRTC_Demo_iOS` 根目录<br>
-    <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_ab6885a787371079c8bd5a4e554de58a.png" width="500px" >
+1. 打开终端窗口，进入 `RTC_Meeting_Demo/iOS/RTCSolution` 根目录<br>
+    <img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/cd.jpg" width="500px" >
 2. 执行 `pod install` 命令构建工程<br>
-    <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_826318a7b078054b6161b878585f97ad.png" width="500px" >
-3. 进入 `RTC_Meeting_Demo/iOS/veRTC_Demo_iOS` 根目录，使用 Xcode 打开 `veRTC_Demo.xcworkspace`<br>
-    <img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_99450c7c3bd9312bab41f0d07ab29d6b" width="500px" >
+    <img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/podinstall.jpg" width="500px" >
+3. 进入 `RTC_Meeting_Demo/iOS/RTCSolution` 根目录，使用 Xcode 打开 `RTCSolution.xcworkspace`<br>
+    <img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/RTCSolution.png" width="500px" >
 4. 在 Xcode 中打开 `Pods/Development Pods/Core/BuildConfig.h` 文件<br>
     <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_0548899b170c606d3fe53adb7c670d4a.jpeg" width="500px" >	
 5. 填写 **HeadUrl**<br>
     当前你可以使用 **https://common.rtc.volcvideo.com/rtc_demo_special** 作为测试服务器域名，仅提供跑通测试服务，无法保障正式需求。<br>
-    <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_bfd188ba8820fd30621ba0b3d4ae57b2.jpeg" width="500px" >
+    <img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/cefd021c-0e8b-4f98-a33f-3cb448f4741e.png" width="500px" >
 6. **填写 APPID、APPKey、AccessKeyID 和 SecretAccessKey**<br>
     使用在控制台获取的 **APPID、APPKey、AccessKeyID 和 SecretAccessKey** 填写到 `BuildConfig.h`文件的对应位置。<br>
-    <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_560b76c0194a7c3b056964a3fefb69d4.png" width="500px" >
+    <img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/iosappid.png" width="500px" >
 7. **填写 ACCOUNT_ID 和 VOD_SPACE**<br>
     使用在控制台获取的 **ACCOUNT_ID 和 VOD_SPACE** 填写到 `Pods/Development Pods/MeetingDemo/MeetingDemoConstants.h` 文件的对应位置。<br>
     <img src="https://portal.volccdn.com/obj/volcfe/cloud-universal-doc/upload_83b95fc8e6e2c49b4f4a3e27d3753b17.png" width="500px" >
@@ -105,15 +105,15 @@
     打开 `veRTC_Demo/MeetingScreenShare/veRTC_Demo.entitlements` 文件，使用获取的`App Groups Identifiers` 值填写到对应位置。<br>
     <img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_4ce3863da3b629fb28f19e6e97d572b7" width="500px" >
 5. 配置开发者证书。	<br>
-    5.1 单击 Xcode 左侧导航栏中的 `VeRTC_Demo` 项目，单击 `TARGETS` 下的 `VeRTC_Demo` 项目，选择 **Signing & Capabilities** > **Automatically manage signing** 自动生成证书<br>
-       <img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_8a00a4aeb5e67519e0a0407116c6efc8" width="500px" >
+    5.1 单击 Xcode 左侧导航栏中的 `RTCSolution` 项目，单击 `TARGETS` 下的 `RTCSolution` 项目，选择 **Signing & Capabilities** > **Automatically manage signing** 自动生成证书<br>
+       <img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/8b11f97e-723f-4a37-a628-dadf3b9e0a96.png" width="500px" >
 
     5.2 在 **Team** 中选择 Personal Team。<br>
-        <img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_c7f2ada7839bafd595211cad265f5f1b" width="500px" >
+        <img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/54af18a8-8542-46f8-abb4-f421c7bcadcf.png" width="500px" >
 
     5.3 **修改 Bundle** **Identifier**。<br>
     默认的 `vertc.veRTCDemo.ios` 已被注册， 将其修改为其他 Bundle ID，格式为 `vertc.xxx`。<br>
-        <img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_d2121b695c59953144f693d61500489e" width="500px" >
+        <img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/pkupenuhr/c7994b44-d4e2-427b-94a4-3b6a92084f90.png" width="500px" >
 
     5.4 单击单击 Xcode 左侧导航栏中的 `VeRTC_Demo` 项目，单击 `TARGETS` 下的 `MeetingScreenShare` 项目，更新签名<br>
         <img src="https://lf3-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_e3ccf8bb29343b438279d7761915a6b5" width="500px" >
@@ -121,7 +121,7 @@
 ### **步骤 7：编译运行**
 选择 **Product** > **Run**， 开始编译。编译成功后你的 iOS 设备上会出现新应用。若为免费苹果账号，需先在`设置->通用-> VPN与设备管理 -> 描述文件与设备管理`中信任开发者 APP。
 
-<img src="https://lf6-volc-editor.volccdn.com/obj/volcfe/sop-public/upload_d9e8f88fe1c32508b2f4857bc7f4464f" width="500px" >
+<img src="https://lf3-static.bytednsdoc.com/obj/eden-cn/lpqubqnuln/092f17e7-7668-479c-a09b-1fdd65d42a9c.png" width="500px" >
 
 ## 运行开始界面
 

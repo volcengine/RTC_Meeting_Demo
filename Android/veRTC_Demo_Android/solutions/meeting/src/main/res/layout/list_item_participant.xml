@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/item_user_height"
+    android:layout_height="84dp"
     tools:background="#1D2129">
 
     <View
@@ -16,10 +16,10 @@
 
     <TextView
         android:id="@+id/user_prefix"
-        android:layout_width="@dimen/item_user_avatar_width"
-        android:layout_height="@dimen/item_user_avatar_height"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="@dimen/item_user_margin"
+        android:layout_marginLeft="16dp"
         android:background="@drawable/user_avatar_bg"
         android:gravity="center"
         android:textSize="20sp"
@@ -32,7 +32,7 @@
         android:layout_height="24dp"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:layout_marginRight="@dimen/item_user_margin" />
+        android:layout_marginRight="16dp" />
 
     <ImageView
         android:id="@+id/user_right_iv2"
@@ -55,7 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#E5E6EB"
-            android:textSize="@dimen/txt_H3_14sp"
+            android:textSize="14sp"
             tools:text="用户名" />
 
         <TextView
@@ -67,7 +67,7 @@
             android:paddingRight="2dp"
             android:text="主持人"
             android:textColor="#4080FF"
-            android:textSize="@dimen/txt_H3_14sp" />
+            android:textSize="14sp" />
 
         <ImageView
             android:id="@+id/user_share_screen_status"

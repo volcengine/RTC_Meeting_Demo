@@ -1,38 +1,40 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.feature.history;
-
-import android.content.Intent;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.LinearLayoutManager;
-
-import com.ss.video.rtc.demo.basic_module.acivities.BaseActivity;
-import com.ss.video.rtc.demo.basic_module.ui.CommonDialog;
-import com.ss.video.rtc.demo.basic_module.utils.SafeToast;
-import com.volcengine.vertcdemo.core.net.ErrorTool;
-import com.volcengine.vertcdemo.meeting.core.MeetingRTCManager;
-import com.volcengine.vertcdemo.meeting.databinding.ActivityHistoryBinding;
-import com.volcengine.vertcdemo.meeting.event.MeetingEndEvent;
-import com.volcengine.vertcdemo.core.eventbus.SolutionDemoEventManager;
-import com.volcengine.vertcdemo.core.net.IRequestCallback;
-import com.volcengine.vertcdemo.core.net.rts.RTSBizResponse;
-import com.volcengine.vertcdemo.meeting.bean.MeetingRecordInfo;
-import com.volcengine.vertcdemo.meeting.R;
-
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.List;
 
 import static androidx.recyclerview.widget.RecyclerView.VERTICAL;
 import static com.volcengine.vertcdemo.meeting.feature.settings.SettingsActivity.EXTRA_VIEW_TYPE;
 import static com.volcengine.vertcdemo.meeting.feature.settings.SettingsActivity.REFER_ROOM;
 import static com.volcengine.vertcdemo.meeting.feature.settings.SettingsActivity.VIEW_TYPE_MINE;
 
-public class HistoryActivity extends BaseActivity {
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
+import com.volcengine.vertcdemo.common.CommonTitleLayout;
+import com.volcengine.vertcdemo.common.SolutionBaseActivity;
+import com.volcengine.vertcdemo.common.SolutionCommonDialog;
+import com.volcengine.vertcdemo.common.SolutionToast;
+import com.volcengine.vertcdemo.core.eventbus.SolutionDemoEventManager;
+import com.volcengine.vertcdemo.core.net.ErrorTool;
+import com.volcengine.vertcdemo.core.net.IRequestCallback;
+import com.volcengine.vertcdemo.core.net.rts.RTSBizResponse;
+import com.volcengine.vertcdemo.meeting.R;
+import com.volcengine.vertcdemo.meeting.bean.MeetingRecordInfo;
+import com.volcengine.vertcdemo.meeting.core.MeetingRTCManager;
+import com.volcengine.vertcdemo.meeting.databinding.ActivityHistoryBinding;
+import com.volcengine.vertcdemo.meeting.event.MeetingEndEvent;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.List;
+
+public class HistoryActivity extends SolutionBaseActivity {
 
     private HistoryPresenter mHistoryPresenter;
     private HistoryAdapter mHistoryAdapter;
@@ -65,20 +67,12 @@ public class HistoryActivity extends BaseActivity {
         Intent intent = getIntent();
         mRefer = intent.getStringExtra(Intent.EXTRA_REFERRER);
         mViewType = intent.getStringExtra(EXTRA_VIEW_TYPE);
-    }
 
-    @Override
-    protected void onGlobalLayoutCompleted() {
-        super.onGlobalLayoutCompleted();
-
-        ImageView backArrow = findViewById(R.id.title_bar_left_iv);
-        backArrow.setImageResource(R.drawable.back_arrow);
-        backArrow.setOnClickListener(v -> finish());
-        TextView title = findViewById(R.id.title_bar_title_tv);
+        mViewBinding.titleBarLayout.setLeftBack(v -> onBackPressed());
         if (TextUtils.equals(mViewType, VIEW_TYPE_MINE)) {
-            title.setText(R.string.mine_history_title);
+            mViewBinding.titleBarLayout.setTitle(R.string.mine_history_title);
         } else {
-            title.setText(R.string.all_history_title);
+            mViewBinding.titleBarLayout.setTitle(R.string.all_history_title);
         }
 
         mViewBinding.meetingRecordRecyclerView.setLayoutManager(new LinearLayoutManager(this, VERTICAL, false));
@@ -101,7 +95,7 @@ public class HistoryActivity extends BaseActivity {
     }
 
     private void deleteMineRecord(MeetingRecordInfo info) {
-        CommonDialog dialog = new CommonDialog(this);
+        SolutionCommonDialog dialog = new SolutionCommonDialog(this);
         dialog.setMessage(getString(R.string.mine_history_delete_tip));
         dialog.setPositiveListener(v -> {
             MeetingRTCManager.ins().getRTSClient().requestDeleteRecord(info.vid, new IRequestCallback<RTSBizResponse>() {
@@ -112,7 +106,7 @@ public class HistoryActivity extends BaseActivity {
 
                 @Override
                 public void onError(int errorCode, String message) {
-                    SafeToast.show(ErrorTool.getErrorMessageByErrorCode(errorCode, message));
+                    SolutionToast.show(ErrorTool.getErrorMessageByErrorCode(errorCode, message));
                 }
             });
             dialog.dismiss();

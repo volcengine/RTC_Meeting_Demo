@@ -1,9 +1,13 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.bean;
 
 import android.util.Pair;
 
 import com.google.gson.annotations.SerializedName;
-import com.ss.video.rtc.demo.basic_module.utils.Utilities;
+import com.volcengine.vertcdemo.utils.AppUtil;
+import com.volcengine.vertcdemo.utils.Utils;
 import com.volcengine.vertcdemo.core.R;
 
 import java.util.Objects;
@@ -31,9 +35,9 @@ public class SettingsConfigEntity {
     @SerializedName("enableLog")
     public boolean enableLog = false;
 
-    // TODO 减少对 Utilities.getApplicationContext() 依赖
+    // TODO 减少对 AppUtil.getApplicationContext() 依赖
     public String[] getResolutions() {
-        return Utilities.getApplicationContext().getResources().getStringArray(R.array.video_resolution);
+        return AppUtil.getApplicationContext().getResources().getStringArray(R.array.video_resolution);
     }
 
     public Pair<Integer, Integer> getResolution() {
@@ -58,9 +62,9 @@ public class SettingsConfigEntity {
                 Integer.parseInt(split[0].trim()));
     }
 
-    // TODO 减少对 Utilities.getApplicationContext() 依赖
+    // TODO 减少对 AppUtil.getApplicationContext() 依赖
     public Pair<Integer, Integer> getBitRatePair() {
-        String[] bitRates = Utilities.getApplicationContext()
+        String[] bitRates = AppUtil.getApplicationContext()
                 .getResources().getStringArray(R.array.video_bit_rate);
         String str = bitRates[index];
         //format: min - max
@@ -69,9 +73,9 @@ public class SettingsConfigEntity {
                 Integer.parseInt(split[1].trim()));
     }
 
-    // TODO 减少对 Utilities.getApplicationContext() 依赖
+    // TODO 减少对 AppUtil.getApplicationContext() 依赖
     public Pair<Integer, Integer> getScreenBitRatePair() {
-        String[] bitRates = Utilities.getApplicationContext()
+        String[] bitRates = AppUtil.getApplicationContext()
                 .getResources().getStringArray(R.array.video_bit_rate);
         String str = bitRates[screenIndex];
         //format: min - max
@@ -117,7 +121,7 @@ public class SettingsConfigEntity {
     }
 
     public String[] getFrameRates() {
-        String[] frameRates = Utilities.getApplicationContext()
+        String[] frameRates = AppUtil.getApplicationContext()
                 .getResources().getStringArray(R.array.video_frame_rate);
         String str = frameRates[index];
         String[] split = str.split("/");

@@ -1,3 +1,6 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.core;
 
 import android.Manifest;
@@ -15,36 +18,38 @@ import android.view.SurfaceView;
 
 import androidx.annotation.DrawableRes;
 
+import com.bytedance.realx.video.RXScreenCaptureService;
 import com.ss.bytertc.engine.VideoCanvas;
+import com.ss.bytertc.engine.data.RemoteStreamKey;
+import com.ss.bytertc.engine.data.StreamIndex;
 import com.ss.bytertc.engine.video.ScreenSharingParameters;
-import com.ss.video.rtc.demo.basic_module.utils.SafeToast;
-import com.ss.video.rtc.demo.basic_module.utils.Utilities;
-import com.volcengine.vertcdemo.meeting.event.HostChangedEvent;
+import com.volcengine.vertcdemo.common.MLog;
+import com.volcengine.vertcdemo.common.SolutionToast;
+import com.volcengine.vertcdemo.core.AudioVideoConfig;
+import com.volcengine.vertcdemo.core.SolutionDataManager;
+import com.volcengine.vertcdemo.core.eventbus.RefreshRoomUserEvent;
+import com.volcengine.vertcdemo.core.eventbus.SolutionDemoEventManager;
+import com.volcengine.vertcdemo.core.eventbus.VolumeEvent;
+import com.volcengine.vertcdemo.core.net.IRequestCallback;
 import com.volcengine.vertcdemo.meeting.bean.MeetingUserInfo;
 import com.volcengine.vertcdemo.meeting.bean.MeetingUsersInfo;
 import com.volcengine.vertcdemo.meeting.bean.SettingsConfigEntity;
 import com.volcengine.vertcdemo.meeting.bean.VideoCanvasWrapper;
-import com.volcengine.vertcdemo.common.MLog;
-import com.volcengine.vertcdemo.core.AudioVideoConfig;
-import com.volcengine.vertcdemo.core.SolutionDataManager;
 import com.volcengine.vertcdemo.meeting.event.CameraStatusChangedEvent;
+import com.volcengine.vertcdemo.meeting.event.HostChangedEvent;
 import com.volcengine.vertcdemo.meeting.event.MicStatusChangeEvent;
 import com.volcengine.vertcdemo.meeting.event.MuteAllEvent;
 import com.volcengine.vertcdemo.meeting.event.MuteEvent;
 import com.volcengine.vertcdemo.meeting.event.RecordEvent;
-import com.volcengine.vertcdemo.core.eventbus.RefreshRoomUserEvent;
 import com.volcengine.vertcdemo.meeting.event.SDKAudioPropertiesEvent;
-import com.volcengine.vertcdemo.meeting.event.ShareScreenEvent;
-import com.volcengine.vertcdemo.core.eventbus.SolutionDemoEventManager;
 import com.volcengine.vertcdemo.meeting.event.SDKSpeakerStatusChangedEvent;
+import com.volcengine.vertcdemo.meeting.event.ShareScreenEvent;
 import com.volcengine.vertcdemo.meeting.event.UserJoinEvent;
 import com.volcengine.vertcdemo.meeting.event.UserLeaveEvent;
-import com.volcengine.vertcdemo.core.eventbus.VolumeEvent;
-import com.volcengine.vertcdemo.core.net.IRequestCallback;
+import com.volcengine.vertcdemo.utils.AppUtil;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.webrtc.RXScreenCaptureService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -155,8 +160,8 @@ public class MeetingDataManager {
         sMeetingInstance = new MeetingDataManager();
         SolutionDemoEventManager.register(sMeetingInstance);
 
-        VideoCanvas canvas = new VideoCanvas(new SurfaceView(Utilities.getApplicationContext()),
-                VideoCanvas.RENDER_MODE_HIDDEN, "", true);
+        VideoCanvas canvas = new VideoCanvas(new SurfaceView(AppUtil.getApplicationContext()),
+                VideoCanvas.RENDER_MODE_HIDDEN);
         sMyWrapper = new VideoCanvasWrapper(canvas, true);
     }
 
@@ -245,7 +250,7 @@ public class MeetingDataManager {
     public static void switchMic(boolean isFromUser) {
         if (!hasAudioPermission()) {
             if (isFromUser) {
-                SafeToast.show("麦克风权限已关闭，请至设备设置页开启。");
+                SolutionToast.show("麦克风权限已关闭，请至设备设置页开启。");
             }
             if (!sMicStatus) {
                 return;
@@ -274,7 +279,7 @@ public class MeetingDataManager {
     public static void switchCamera(boolean isFromUser) {
         if (!hasVideoPermission()) {
             if (isFromUser) {
-                SafeToast.show("摄像头权限已关闭，请至设备设置页开启。");
+                SolutionToast.show("摄像头权限已关闭，请至设备设置页开启。");
             }
             if (!sCameraStatus) {
                 return;
@@ -282,7 +287,7 @@ public class MeetingDataManager {
         }
 
         if (isSelf(sScreenShareUid) && !sCameraStatus) {
-            SafeToast.show("结束共享后方可打开摄像头");
+            SolutionToast.show("结束共享后方可打开摄像头");
             return;
         }
 
@@ -564,13 +569,12 @@ public class MeetingDataManager {
         }
         VideoCanvasWrapper wrapper = sUidVideoViewMap.get(uid);
         if (wrapper == null) {
-            VideoCanvas canvas = new VideoCanvas(new SurfaceView(Utilities.getApplicationContext()),
-                    VideoCanvas.RENDER_MODE_HIDDEN, uid, false);
+            VideoCanvas canvas = new VideoCanvas(new SurfaceView(AppUtil.getApplicationContext()),
+                    VideoCanvas.RENDER_MODE_HIDDEN);
             wrapper = new VideoCanvasWrapper(canvas, hasVideo);
         } else {
             wrapper.showVideo = hasVideo;
         }
-        wrapper.videoCanvas.roomId = MeetingDataManager.getMeetingId();
         sUidVideoViewMap.put(uid, wrapper);
         return wrapper;
     }
@@ -587,15 +591,15 @@ public class MeetingDataManager {
         sScreenShareUserName = userName;
         VideoCanvasWrapper wrapper = sUidScreenViewMap.get(uid);
         if (wrapper == null) {
-            VideoCanvas canvas = new VideoCanvas(new SurfaceView(Utilities.getApplicationContext()),
-                    VideoCanvas.RENDER_MODE_FIT, uid, true);
+            VideoCanvas canvas = new VideoCanvas(new SurfaceView(AppUtil.getApplicationContext()),
+                    VideoCanvas.RENDER_MODE_FIT);
             wrapper = new VideoCanvasWrapper(canvas, hasVideo);
         } else {
             wrapper.showVideo = hasVideo;
         }
-        wrapper.videoCanvas.roomId = MeetingDataManager.getMeetingId();
         MeetingRTCManager.ins().subscribeScreen(uid);
-        MeetingRTCManager.ins().setupRemoteScreen(wrapper.videoCanvas);
+        RemoteStreamKey streamKey = new RemoteStreamKey(MeetingDataManager.getMeetingId(), uid, StreamIndex.STREAM_INDEX_SCREEN);
+        MeetingRTCManager.ins().setupRemoteScreen(streamKey, wrapper.videoCanvas);
 
         sUidScreenViewMap.put(uid, wrapper);
         return wrapper;
@@ -612,12 +616,12 @@ public class MeetingDataManager {
 
     public static void startScreenSharing(Activity activity) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            SafeToast.show("当前系统版本过低，无法支持屏幕共享");
+            SolutionToast.show("当前系统版本过低，无法支持屏幕共享");
             return;
         }
-        MediaProjectionManager manager = (MediaProjectionManager) Utilities.getApplicationContext().getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+        MediaProjectionManager manager = (MediaProjectionManager) AppUtil.getApplicationContext().getSystemService(Context.MEDIA_PROJECTION_SERVICE);
         if (manager == null) {
-            SafeToast.show("此手机无法开启屏幕分享");
+            SolutionToast.show("此手机无法开启屏幕分享");
             return;
         }
         activity.startActivityForResult(manager.createScreenCaptureIntent(), REQUEST_CODE_OF_SCREEN_SHARING);
@@ -681,7 +685,7 @@ public class MeetingDataManager {
     public static void switchCameraType(boolean isFromUser) {
         if (!hasVideoPermission()) {
             if (isFromUser) {
-                SafeToast.show("摄像头权限已关闭，请至设备设置页开启。");
+                SolutionToast.show("摄像头权限已关闭，请至设备设置页开启。");
             }
             return;
         }
@@ -700,13 +704,13 @@ public class MeetingDataManager {
     }
 
     public static boolean hasAudioPermission() {
-        int res = Utilities.getApplicationContext().checkPermission(
+        int res = AppUtil.getApplicationContext().checkPermission(
                 Manifest.permission.RECORD_AUDIO, android.os.Process.myPid(), Process.myUid());
         return res == PackageManager.PERMISSION_GRANTED;
     }
 
     public static boolean hasVideoPermission() {
-        int res = Utilities.getApplicationContext().checkPermission(
+        int res = AppUtil.getApplicationContext().checkPermission(
                 Manifest.permission.CAMERA, android.os.Process.myPid(), Process.myUid());
         return res == PackageManager.PERMISSION_GRANTED;
     }
@@ -811,7 +815,7 @@ public class MeetingDataManager {
         if (!sMicStatus) {
             return;
         }
-        SafeToast.show("你已被主持人静音");
+        SolutionToast.show("你已被主持人静音");
 
         switchMic(false);
     }

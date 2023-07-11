@@ -1,7 +1,10 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.feature.createroom;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static com.volcengine.vertcdemo.core.net.rts.RTSInfo.KEY_RTM;
+import static com.volcengine.vertcdemo.core.net.rts.RTSInfo.KEY_RTS;
 
 import android.Manifest;
 import android.app.Activity;
@@ -19,36 +22,33 @@ import androidx.core.content.ContextCompat;
 
 import com.ss.bytertc.engine.RTCEngine;
 import com.ss.bytertc.engine.VideoCanvas;
-import com.ss.video.rtc.demo.basic_module.acivities.BaseActivity;
-import com.ss.video.rtc.demo.basic_module.adapter.TextWatcherAdapter;
-import com.ss.video.rtc.demo.basic_module.ui.CommonDialog;
-import com.ss.video.rtc.demo.basic_module.utils.IMEUtils;
-import com.ss.video.rtc.demo.basic_module.utils.Utilities;
-import com.ss.video.rtc.demo.basic_module.utils.WindowUtils;
-import com.vertcdemo.joinrtsparams.bean.JoinRTSRequest;
 import com.vertcdemo.joinrtsparams.common.JoinRTSManager;
 import com.volcengine.vertcdemo.common.IAction;
 import com.volcengine.vertcdemo.common.LengthFilterWithCallback;
+import com.volcengine.vertcdemo.common.SolutionBaseActivity;
+import com.volcengine.vertcdemo.common.SolutionCommonDialog;
+import com.volcengine.vertcdemo.common.TextWatcherAdapter;
 import com.volcengine.vertcdemo.core.SolutionDataManager;
+import com.volcengine.vertcdemo.core.eventbus.AppTokenExpiredEvent;
 import com.volcengine.vertcdemo.core.eventbus.SolutionDemoEventManager;
-import com.volcengine.vertcdemo.core.eventbus.TokenExpiredEvent;
 import com.volcengine.vertcdemo.core.net.IRequestCallback;
 import com.volcengine.vertcdemo.core.net.ServerResponse;
 import com.volcengine.vertcdemo.core.net.rts.RTSInfo;
 import com.volcengine.vertcdemo.meeting.R;
-import com.volcengine.vertcdemo.meeting.core.Constants;
 import com.volcengine.vertcdemo.meeting.core.MeetingDataManager;
 import com.volcengine.vertcdemo.meeting.core.MeetingRTCManager;
 import com.volcengine.vertcdemo.meeting.databinding.ActivityCreateMeetingBinding;
 import com.volcengine.vertcdemo.meeting.event.CameraStatusChangedEvent;
 import com.volcengine.vertcdemo.meeting.event.MicStatusChangeEvent;
+import com.volcengine.vertcdemo.utils.AppUtil;
+import com.volcengine.vertcdemo.utils.IMEUtils;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.regex.Pattern;
 
-public class CreateMeetingActivity extends BaseActivity implements View.OnClickListener {
+public class CreateMeetingActivity extends SolutionBaseActivity implements View.OnClickListener {
 
     private static final String TAG = "CreateMeetingActivity";
 
@@ -84,33 +84,6 @@ public class CreateMeetingActivity extends BaseActivity implements View.OnClickL
         setContentView(mViewBinding.getRoot());
 
         mLoginPresenter = new CreateMeetingPresenter(this);
-    }
-
-    private void initRTSInfo() {
-        Intent intent = getIntent();
-        if (intent == null) {
-            return;
-        }
-        RTSInfo info = intent.getParcelableExtra(RTSInfo.KEY_RTM);
-        if (info == null || !info.isValid()) {
-            finish();
-            return;
-        }
-        MeetingRTCManager.ins().rtcConnect(info);
-    }
-
-    @Override
-    protected void setupStatusBar() {
-        WindowUtils.setLayoutFullScreen(getWindow());
-    }
-
-    @Override
-    protected void onGlobalLayoutCompleted() {
-        super.onGlobalLayoutCompleted();
-        if (mHasLayoutCompleted) {
-            return;
-        }
-        mHasLayoutCompleted = true;
 
         mViewBinding.loginRoot.setOnClickListener(this);
         mViewBinding.loginJoinMeeting.setOnClickListener(this);
@@ -142,7 +115,7 @@ public class CreateMeetingActivity extends BaseActivity implements View.OnClickL
         SolutionDemoEventManager.register(this);
 
         mViewBinding.loginVersion.setText(String.format("App版本 v%1$s / SDK版本 %2$s",
-                SolutionDataManager.ins().getAppVersionName(),
+                AppUtil.getAppVersionName(),
                 RTCEngine.getSdkVersion()));
 
         updateAudioStatus(MeetingDataManager.getMicStatus());
@@ -150,6 +123,20 @@ public class CreateMeetingActivity extends BaseActivity implements View.OnClickL
 
         showLimitedServiceDialog();
     }
+
+    private void initRTSInfo() {
+        Intent intent = getIntent();
+        if (intent == null) {
+            return;
+        }
+        RTSInfo info = intent.getParcelableExtra(RTSInfo.KEY_RTS);
+        if (info == null || !info.isValid()) {
+            finish();
+            return;
+        }
+        MeetingRTCManager.ins().rtcConnect(info);
+    }
+
 
     @Override
     public void onClick(View v) {
@@ -219,7 +206,7 @@ public class CreateMeetingActivity extends BaseActivity implements View.OnClickL
     }
 
     private void showLimitedServiceDialog() {
-        CommonDialog dialog = new CommonDialog(this);
+        SolutionCommonDialog dialog = new SolutionCommonDialog(this);
         dialog.setCancelable(false);
         dialog.setMessage(getString(R.string.login_limited_service));
         dialog.setPositiveListener(v -> dialog.dismiss());
@@ -321,7 +308,7 @@ public class CreateMeetingActivity extends BaseActivity implements View.OnClickL
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onTokenExpiredEvent(TokenExpiredEvent event) {
+    public void onTokenExpiredEvent(AppTokenExpiredEvent event) {
         finish();
     }
 
@@ -338,8 +325,8 @@ public class CreateMeetingActivity extends BaseActivity implements View.OnClickL
                     return;
                 }
                 Intent intent = new Intent(Intent.ACTION_MAIN);
-                intent.setClass(Utilities.getApplicationContext(), CreateMeetingActivity.class);
-                intent.putExtra(KEY_RTM, data);
+                intent.setClass(AppUtil.getApplicationContext(), CreateMeetingActivity.class);
+                intent.putExtra(KEY_RTS, data);
                 activity.startActivity(intent);
                 if (doneAction != null) {
                     doneAction.act(null);
@@ -353,12 +340,8 @@ public class CreateMeetingActivity extends BaseActivity implements View.OnClickL
                 }
             }
         };
-        JoinRTSRequest request = new JoinRTSRequest();
-        request.scenesName = Constants.SOLUTION_NAME_ABBR;
-        request.loginToken = SolutionDataManager.ins().getToken();
-        request.volcAccountId = Constants.ACCOUNT_ID;
-        request.vodSpace = Constants.VOD_SPACE;
 
+        MeetingJoinRTSRequest request = new MeetingJoinRTSRequest();
         JoinRTSManager.setAppInfoAndJoinRTM(request, callback);
     }
 }

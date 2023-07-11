@@ -1,3 +1,6 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.core;
 
 import android.text.TextUtils;
@@ -7,7 +10,8 @@ import androidx.annotation.NonNull;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.ss.bytertc.engine.RTCVideo;
-import com.ss.video.rtc.demo.basic_module.utils.AppExecutors;
+import com.volcengine.vertcdemo.common.AppExecutors;
+import com.volcengine.vertcdemo.meeting.bean.ReconnectResponse;
 import com.volcengine.vertcdemo.meeting.event.HostChangedEvent;
 import com.volcengine.vertcdemo.meeting.bean.MeetingRecordInfoList;
 import com.volcengine.vertcdemo.meeting.bean.MeetingResponse;
@@ -57,6 +61,7 @@ public class MeetingRTSClient extends RTSBaseClient {
     private static final String CMD_MEETING_MUTE_USER = "vcMuteUser";
     private static final String CMD_MEETING_LEAVE_MEETING = "vcLeaveMeeting";
     private static final String CMD_MEETING_END_MEETING = "vcEndMeeting";
+    private static final String CMD_RECONNECT = "vcReconnect";
 
     private static final String ON_USER_MIC_STATUS_CHANGE = "onUserMicStatusChange";
     private static final String ON_USER_CAMERA_STATUS_CHANGE = "onUserCameraStatusChange";
@@ -78,9 +83,15 @@ public class MeetingRTSClient extends RTSBaseClient {
         initEventListener();
     }
 
+    public void reconnect(String roomId, IRequestCallback<ReconnectResponse> callback) {
+        JsonObject params = getCommonParams(CMD_RECONNECT);
+        params.addProperty("login_token", SolutionDataManager.ins().getToken());
+        sendServerMessageOnNetwork(roomId, params, ReconnectResponse.class, callback);
+    }
+
     private JsonObject getCommonParams(String cmd) {
         JsonObject params = new JsonObject();
-        params.addProperty("app_id", mRtmInfo.appId);
+        params.addProperty("app_id", mRTSInfo.appId);
         params.addProperty("room_id", "");
         params.addProperty("user_id", SolutionDataManager.ins().getUserId());
         params.addProperty("user_name", SolutionDataManager.ins().getUserName());

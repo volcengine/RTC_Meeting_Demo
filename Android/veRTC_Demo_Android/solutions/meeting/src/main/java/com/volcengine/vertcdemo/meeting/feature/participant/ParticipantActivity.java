@@ -1,41 +1,42 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.feature.participant;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.ss.video.rtc.demo.basic_module.acivities.BaseActivity;
-import com.ss.video.rtc.demo.basic_module.ui.CommonDialog;
+import com.volcengine.vertcdemo.common.SolutionBaseActivity;
 import com.volcengine.vertcdemo.common.SolutionCommonDialog;
-import com.volcengine.vertcdemo.meeting.databinding.ActivityParticipantBinding;
-import com.volcengine.vertcdemo.meeting.event.HostChangedEvent;
+import com.volcengine.vertcdemo.common.SolutionToast;
+import com.volcengine.vertcdemo.core.eventbus.SolutionDemoEventManager;
+import com.volcengine.vertcdemo.core.eventbus.VolumeEvent;
+import com.volcengine.vertcdemo.core.net.IRequestCallback;
+import com.volcengine.vertcdemo.core.net.rts.RTSBizResponse;
+import com.volcengine.vertcdemo.meeting.R;
 import com.volcengine.vertcdemo.meeting.bean.MeetingUserInfo;
 import com.volcengine.vertcdemo.meeting.bean.MeetingUsersInfo;
-import com.volcengine.vertcdemo.common.SolutionToast;
 import com.volcengine.vertcdemo.meeting.core.MeetingDataManager;
 import com.volcengine.vertcdemo.meeting.core.MeetingRTCManager;
+import com.volcengine.vertcdemo.meeting.databinding.ActivityParticipantBinding;
 import com.volcengine.vertcdemo.meeting.event.AskOpenMicEvent;
 import com.volcengine.vertcdemo.meeting.event.CameraStatusChangedEvent;
+import com.volcengine.vertcdemo.meeting.event.HostChangedEvent;
 import com.volcengine.vertcdemo.meeting.event.KickedOffEvent;
 import com.volcengine.vertcdemo.meeting.event.MeetingEndEvent;
 import com.volcengine.vertcdemo.meeting.event.MicStatusChangeEvent;
 import com.volcengine.vertcdemo.meeting.event.MuteAllEvent;
 import com.volcengine.vertcdemo.meeting.event.RoomCloseEvent;
 import com.volcengine.vertcdemo.meeting.event.ShareScreenEvent;
-import com.volcengine.vertcdemo.core.eventbus.SolutionDemoEventManager;
 import com.volcengine.vertcdemo.meeting.event.UserJoinEvent;
 import com.volcengine.vertcdemo.meeting.event.UserLeaveEvent;
-import com.volcengine.vertcdemo.core.eventbus.VolumeEvent;
-import com.volcengine.vertcdemo.core.net.IRequestCallback;
-import com.volcengine.vertcdemo.core.net.rts.RTSBizResponse;
-import com.volcengine.vertcdemo.meeting.R;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -47,7 +48,7 @@ import java.util.Map;
 /**
  * 参会者人员页面
  */
-public class ParticipantActivity extends BaseActivity implements View.OnClickListener {
+public class ParticipantActivity extends SolutionBaseActivity implements View.OnClickListener {
 
     private TextView mTitleView;
     private ActivityParticipantBinding mViewBinding;
@@ -67,15 +68,8 @@ public class ParticipantActivity extends BaseActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         mViewBinding = ActivityParticipantBinding.inflate(getLayoutInflater());
         setContentView(mViewBinding.getRoot());
-    }
 
-    @Override
-    protected void onGlobalLayoutCompleted() {
-        super.onGlobalLayoutCompleted();
-
-        ImageView backArrow = findViewById(R.id.title_bar_left_iv);
-        backArrow.setImageResource(R.drawable.back_arrow);
-        backArrow.setOnClickListener(v -> finish());
+        mViewBinding.titleBarLayout.setLeftBack(v -> onBackPressed());
 
         mViewBinding.usersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mParticipantAdapter = new ParticipantAdapter(new ArrayList<>(), mUserOptionCallback);
@@ -269,7 +263,7 @@ public class ParticipantActivity extends BaseActivity implements View.OnClickLis
         if (MeetingDataManager.getMicStatus()) {
             return;
         }
-        CommonDialog dialog = new CommonDialog(this);
+        SolutionCommonDialog dialog = new SolutionCommonDialog(this);
         dialog.setMessage(this.getString(R.string.on_ask_open_mic));
         dialog.setPositiveListener(v -> {
             if (!MeetingDataManager.getMicStatus()) {

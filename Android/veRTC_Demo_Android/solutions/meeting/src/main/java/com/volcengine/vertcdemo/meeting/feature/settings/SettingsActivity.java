@@ -1,3 +1,6 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.feature.settings;
 
 import android.content.Intent;
@@ -5,18 +8,18 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import com.ss.bytertc.engine.ScreenVideoEncoderConfig;
 import com.ss.bytertc.engine.VideoEncoderConfig;
-import com.ss.video.rtc.demo.basic_module.acivities.BaseActivity;
-import com.ss.video.rtc.demo.basic_module.ui.CommonSeekbarSettingDialog;
-import com.ss.video.rtc.demo.basic_module.utils.WindowUtils;
+import com.volcengine.vertcdemo.common.CommonSeekbarSettingDialog;
+import com.volcengine.vertcdemo.common.CommonTitleLayout;
+import com.volcengine.vertcdemo.common.SolutionBaseActivity;
 import com.volcengine.vertcdemo.core.eventbus.SolutionDemoEventManager;
-import com.volcengine.vertcdemo.core.eventbus.TokenExpiredEvent;
+import com.volcengine.vertcdemo.core.eventbus.AppTokenExpiredEvent;
 import com.volcengine.vertcdemo.meeting.R;
 import com.volcengine.vertcdemo.meeting.bean.SettingsConfigEntity;
 import com.volcengine.vertcdemo.meeting.core.MeetingDataManager;
@@ -32,7 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class SettingsActivity extends BaseActivity {
+public class SettingsActivity extends SolutionBaseActivity {
 
     public static final String EXTRA_REFER = Intent.EXTRA_REFERRER;
     public static final String EXTRA_VIEW_TYPE = "extra_view_type";
@@ -56,17 +59,10 @@ public class SettingsActivity extends BaseActivity {
         mOriginConfigEntity = MeetingDataManager.sSettingsConfigEntity;
         mCurrentConfigEntity = mOriginConfigEntity.deepCopy();
         setContentView(R.layout.activity_settings);
-    }
 
-    @Override
-    protected void onGlobalLayoutCompleted() {
-        super.onGlobalLayoutCompleted();
-
-        ImageView backArrow = findViewById(R.id.title_bar_left_iv);
-        backArrow.setImageResource(R.drawable.back_arrow);
-        backArrow.setOnClickListener(v -> finish());
-        TextView title = findViewById(R.id.title_bar_title_tv);
-        title.setText(R.string.settings_title);
+        CommonTitleLayout titleLayout = findViewById(R.id.room_title_bar_layout);
+        titleLayout.setLeftBack(v -> onBackPressed());
+        titleLayout.setTitle(R.string.settings_title);
 
         setResolution();
         setFrameRate();
@@ -95,7 +91,7 @@ public class SettingsActivity extends BaseActivity {
         }
         MeetingDataManager.sSettingsConfigEntity = mCurrentConfigEntity;
         Pair<Integer, Integer> pair = MeetingDataManager.sSettingsConfigEntity.getScreenResolution();
-        VideoEncoderConfig videoEncoderConfig = new VideoEncoderConfig();
+        ScreenVideoEncoderConfig videoEncoderConfig = new ScreenVideoEncoderConfig();
         videoEncoderConfig.width = pair.first;
         videoEncoderConfig.height = pair.second;
         videoEncoderConfig.frameRate = MeetingDataManager.sSettingsConfigEntity.getScreenFrameRate();
@@ -353,14 +349,10 @@ public class SettingsActivity extends BaseActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onTokenExpiredEvent(TokenExpiredEvent event) {
+    public void onTokenExpiredEvent(AppTokenExpiredEvent event) {
         if (REFER_ROOM.equals(mRefer)) {
             finish();
         }
     }
 
-    @Override
-    protected void setupStatusBar() {
-        WindowUtils.setLayoutFullScreen(getWindow());
-    }
 }

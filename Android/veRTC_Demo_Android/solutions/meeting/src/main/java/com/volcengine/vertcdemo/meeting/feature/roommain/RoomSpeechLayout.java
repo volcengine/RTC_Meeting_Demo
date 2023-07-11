@@ -1,3 +1,6 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.feature.roommain;
 
 import android.content.Context;
@@ -11,7 +14,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.ss.video.rtc.demo.basic_module.utils.Utilities;
+import com.volcengine.vertcdemo.utils.Utils;
 import com.volcengine.vertcdemo.meeting.core.MeetingDataManager;
 import com.volcengine.vertcdemo.meeting.bean.VideoCanvasWrapper;
 import com.volcengine.vertcdemo.meeting.R;
@@ -64,7 +67,7 @@ public class RoomSpeechLayout extends FrameLayout {
             if (screenWrapper != null) {
                 SurfaceView render = screenWrapper.getSurfaceView();
                 if (render.getParent() == null || render.getParent() != mScreenContainer) {
-                    Utilities.removeFromParent(render);
+                    Utils.removeFromParent(render);
                     mScreenContainer.addView(render, new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
                 }
             }

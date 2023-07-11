@@ -1,3 +1,6 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.feature.settings;
 
 import android.content.Context;
@@ -13,7 +16,7 @@ import androidx.appcompat.app.AppCompatDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.ss.video.rtc.demo.basic_module.utils.WindowUtils;
+import com.volcengine.vertcdemo.common.WindowUtils;
 import com.volcengine.vertcdemo.meeting.R;
 
 import java.util.ArrayList;
@@ -29,7 +32,7 @@ public class ListSettingDialog extends AppCompatDialog {
     private final RecyclerView mRecyclerView;
 
     public ListSettingDialog(Context context, List<String> data, int defaultIndex, String title, ListSettingDialog.ListDialogListener dialogListener) {
-        super(context, R.style.CommonDialog);
+        super(context, R.style.SolutionCommonDialog);
         this.setCancelable(true);
         this.mDialogListener = dialogListener;
         this.mData.add("");

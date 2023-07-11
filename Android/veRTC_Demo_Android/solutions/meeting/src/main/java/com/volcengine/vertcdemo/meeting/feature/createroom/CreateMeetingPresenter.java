@@ -1,11 +1,13 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.feature.createroom;
 
 import android.content.Intent;
 import android.view.View;
 
-import com.ss.video.rtc.demo.basic_module.ui.CommonDialog;
-import com.ss.video.rtc.demo.basic_module.utils.IMEUtils;
-import com.ss.video.rtc.demo.basic_module.utils.SafeToast;
+import com.volcengine.vertcdemo.common.SolutionCommonDialog;
+import com.volcengine.vertcdemo.common.SolutionToast;
 import com.volcengine.vertcdemo.core.SolutionDataManager;
 import com.volcengine.vertcdemo.core.eventbus.RefreshUserNameEvent;
 import com.volcengine.vertcdemo.core.eventbus.SolutionDemoEventManager;
@@ -17,6 +19,7 @@ import com.volcengine.vertcdemo.meeting.core.MeetingDataManager;
 import com.volcengine.vertcdemo.meeting.core.MeetingRTCManager;
 import com.volcengine.vertcdemo.meeting.feature.roommain.RoomActivity;
 import com.volcengine.vertcdemo.meeting.feature.settings.SettingsActivity;
+import com.volcengine.vertcdemo.utils.IMEUtils;
 
 public class CreateMeetingPresenter {
 
@@ -54,7 +57,7 @@ public class CreateMeetingPresenter {
                     @Override
                     public void onError(int errorCode, String message) {
                         isJoining = false;
-                        SafeToast.show(ErrorTool.getErrorMessageByErrorCode(errorCode, message));
+                        SolutionToast.show(ErrorTool.getErrorMessageByErrorCode(errorCode, message));
                     }
                 });
     }
@@ -105,7 +108,7 @@ public class CreateMeetingPresenter {
         if (mLoginActivity != null && !mLoginActivity.isFinishing()) {
             if (requestCode == RoomActivity.ROOM_REQUEST_CODE) {
                 if (resultCode == RoomActivity.REQUEST_CODE_DUPLICATE_LOGIN) {
-                    CommonDialog kickOutDialog = new CommonDialog(mLoginActivity);
+                    SolutionCommonDialog kickOutDialog = new SolutionCommonDialog(mLoginActivity);
                     kickOutDialog.setMessage(mLoginActivity.getString(R.string.login_duplicate_login));
                     kickOutDialog.setPositiveListener(v -> kickOutDialog.dismiss());
                     kickOutDialog.show();

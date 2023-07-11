@@ -1,3 +1,6 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.feature.roommain;
 
 import android.annotation.SuppressLint;
@@ -23,10 +26,15 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import com.ss.video.rtc.demo.basic_module.acivities.BaseActivity;
-import com.ss.video.rtc.demo.basic_module.utils.SafeToast;
-import com.ss.video.rtc.demo.basic_module.utils.Utilities;
-import com.ss.video.rtc.demo.basic_module.utils.WindowUtils;
+import com.volcengine.vertcdemo.common.SolutionBaseActivity;
+import com.volcengine.vertcdemo.common.SolutionToast;
+import com.volcengine.vertcdemo.core.eventbus.SDKReconnectToRoomEvent;
+import com.volcengine.vertcdemo.core.net.ErrorTool;
+import com.volcengine.vertcdemo.core.net.IRequestCallback;
+import com.volcengine.vertcdemo.meeting.bean.ReconnectResponse;
+import com.volcengine.vertcdemo.meeting.core.MeetingRTSClient;
+import com.volcengine.vertcdemo.utils.Utils;
+import com.volcengine.vertcdemo.common.WindowUtils;
 import com.volcengine.vertcdemo.meeting.event.HostChangedEvent;
 import com.volcengine.vertcdemo.common.MLog;
 import com.volcengine.vertcdemo.meeting.core.MeetingDataManager;
@@ -44,7 +52,7 @@ import com.volcengine.vertcdemo.meeting.event.ShareScreenEvent;
 import com.volcengine.vertcdemo.core.eventbus.SocketConnectEvent;
 import com.volcengine.vertcdemo.core.eventbus.SolutionDemoEventManager;
 import com.volcengine.vertcdemo.meeting.event.SDKSpeakerStatusChangedEvent;
-import com.volcengine.vertcdemo.core.eventbus.TokenExpiredEvent;
+import com.volcengine.vertcdemo.core.eventbus.AppTokenExpiredEvent;
 import com.volcengine.vertcdemo.core.eventbus.VolumeEvent;
 import com.volcengine.vertcdemo.meeting.bean.MeetingUserInfo;
 import com.volcengine.vertcdemo.meeting.R;
@@ -56,7 +64,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.List;
 
 @SuppressLint("ClickableViewAccessibility")
-public class RoomActivity extends BaseActivity implements View.OnClickListener {
+public class RoomActivity extends SolutionBaseActivity implements View.OnClickListener {
 
     public static final String EXTRA_KEY_USER_ID = "user_id";
     public static final String EXTRA_KEY_USER_UNIFORM_NAME = "user_uniform_name";
@@ -163,11 +171,6 @@ public class RoomActivity extends BaseActivity implements View.OnClickListener {
         setContentView(R.layout.activity_room);
         mRoomPresenter = new RoomPresenter(this);
         mEnterMeetingMs = System.currentTimeMillis();
-    }
-
-    @Override
-    protected void onGlobalLayoutCompleted() {
-        super.onGlobalLayoutCompleted();
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -181,7 +184,7 @@ public class RoomActivity extends BaseActivity implements View.OnClickListener {
             ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData mClipData = ClipData.newPlainText("Label", mMeetingId);
             cm.setPrimaryClip(mClipData);
-            SafeToast.show("房间号已复制");
+            SolutionToast.show("房间号已复制");
             return true;
         });
 
@@ -207,7 +210,7 @@ public class RoomActivity extends BaseActivity implements View.OnClickListener {
         mScreenShareStatus = findViewById(R.id.room_speech_share_status);
         mRoomMainLayout = findViewById(R.id.layout_room_main);
 
-        mScreenWidth = mRoomMainLayout.getWidth();
+        mScreenWidth = WindowUtils.getScreenWidth(getApplicationContext());
         mRoomMainLayout.getViewTreeObserver().addOnGlobalLayoutListener(mOnGlobalLayoutListener);
         mRoomMainLayout.setOnTouchListener(mRootOnTouchListener);
 
@@ -275,7 +278,7 @@ public class RoomActivity extends BaseActivity implements View.OnClickListener {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == MeetingDataManager.REQUEST_CODE_OF_SCREEN_SHARING) {
             if (resultCode != Activity.RESULT_OK) {
-                SafeToast.show("开启屏幕共享失败");
+                SolutionToast.show("开启屏幕共享失败");
                 return;
             }
 
@@ -469,7 +472,7 @@ public class RoomActivity extends BaseActivity implements View.OnClickListener {
             }
         } else {
             boolean isMoreShow = mBottomFuncExtension.getVisibility() == View.VISIBLE;
-            int dp64 = (int) Utilities.dip2Px(isMoreShow ? 128 : 64);
+            int dp64 = (int) Utils.dp2Px(isMoreShow ? 128 : 64);
             if (bottomMargin != dp64) {
                 params.bottomMargin = dp64;
                 mRTCStatTv.setLayoutParams(params);
@@ -483,12 +486,12 @@ public class RoomActivity extends BaseActivity implements View.OnClickListener {
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mRecordStatusIv.getLayoutParams();
         if (MeetingDataManager.hasSomeoneScreenShare()) {
             if (mCurrentModel == MAIN_MODEL_FULL_SCREEN) {
-                params.topMargin = (int) Utilities.dip2Px(40);
+                params.topMargin = (int) Utils.dp2Px(40);
             } else {
-                params.topMargin = (int) Utilities.dip2Px(62) + WindowUtils.getScreenWidth(this) * 3 / 8;
+                params.topMargin = (int) Utils.dp2Px(62) + WindowUtils.getScreenWidth(this) * 3 / 8;
             }
         } else {
-            params.topMargin = (int) Utilities.dip2Px(62);
+            params.topMargin = (int) Utils.dp2Px(62);
         }
         mRecordStatusIv.setLayoutParams(params);
     }
@@ -603,7 +606,27 @@ public class RoomActivity extends BaseActivity implements View.OnClickListener {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onTokenExpiredEvent(TokenExpiredEvent event) {
+    public void onTokenExpiredEvent(AppTokenExpiredEvent event) {
         finish();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSDKReconnectToRoomEvent(SDKReconnectToRoomEvent event) {
+        MeetingRTSClient rtsClient = MeetingRTCManager.ins().getRTSClient();
+        if (rtsClient != null) {
+            rtsClient.reconnect(MeetingDataManager.getMeetingId(), new IRequestCallback<ReconnectResponse>() {
+                @Override
+                public void onSuccess(ReconnectResponse data) {
+
+                }
+
+                @Override
+                public void onError(int errorCode, String message) {
+                    SolutionToast.show(ErrorTool.getErrorMessageByErrorCode(errorCode, message));
+                    mRoomPresenter.onMeetingEnd();
+                    finish();
+                }
+            });
+        }
     }
 }

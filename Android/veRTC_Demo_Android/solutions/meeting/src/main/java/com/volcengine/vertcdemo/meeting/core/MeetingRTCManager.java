@@ -1,3 +1,6 @@
+// Copyright (c) 2023 Beijing Volcano Engine Technology Ltd.
+// SPDX-License-Identifier: MIT
+
 package com.volcengine.vertcdemo.meeting.core;
 
 import android.content.Intent;
@@ -7,8 +10,8 @@ import android.util.Pair;
 
 import com.ss.bytertc.engine.RTCRoom;
 import com.ss.bytertc.engine.RTCRoomConfig;
-import com.ss.bytertc.engine.RTCStream;
 import com.ss.bytertc.engine.RTCVideo;
+import com.ss.bytertc.engine.ScreenVideoEncoderConfig;
 import com.ss.bytertc.engine.UserInfo;
 import com.ss.bytertc.engine.VideoCanvas;
 import com.ss.bytertc.engine.VideoEncoderConfig;
@@ -18,6 +21,7 @@ import com.ss.bytertc.engine.data.CameraId;
 import com.ss.bytertc.engine.data.LocalAudioPropertiesInfo;
 import com.ss.bytertc.engine.data.MirrorType;
 import com.ss.bytertc.engine.data.RemoteAudioPropertiesInfo;
+import com.ss.bytertc.engine.data.RemoteStreamKey;
 import com.ss.bytertc.engine.data.ScreenMediaType;
 import com.ss.bytertc.engine.data.StreamIndex;
 import com.ss.bytertc.engine.type.AudioScenarioType;
@@ -30,18 +34,19 @@ import com.ss.bytertc.engine.type.RemoteStreamStats;
 import com.ss.bytertc.engine.type.RemoteVideoStats;
 import com.ss.bytertc.engine.type.SubscribeFallbackOptions;
 import com.ss.bytertc.engine.video.ScreenSharingParameters;
-import com.ss.video.rtc.demo.basic_module.utils.AppExecutors;
-import com.ss.video.rtc.demo.basic_module.utils.Utilities;
+import com.volcengine.vertcdemo.common.AppExecutors;
 import com.volcengine.vertcdemo.common.MLog;
 import com.volcengine.vertcdemo.core.SolutionDataManager;
 import com.volcengine.vertcdemo.core.eventbus.SDKJoinChannelSuccessEvent;
+import com.volcengine.vertcdemo.core.eventbus.SDKReconnectToRoomEvent;
 import com.volcengine.vertcdemo.core.eventbus.SolutionDemoEventManager;
 import com.volcengine.vertcdemo.core.net.rts.RTCRoomEventHandlerWithRTS;
 import com.volcengine.vertcdemo.core.net.rts.RTCVideoEventHandlerWithRTS;
 import com.volcengine.vertcdemo.core.net.rts.RTSInfo;
 import com.volcengine.vertcdemo.meeting.bean.MeetingUserInfo;
-import com.volcengine.vertcdemo.meeting.event.SDKRTCStatEvent;
 import com.volcengine.vertcdemo.meeting.event.SDKAudioPropertiesEvent;
+import com.volcengine.vertcdemo.meeting.event.SDKRTCStatEvent;
+import com.volcengine.vertcdemo.utils.AppUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,28 +132,26 @@ public class MeetingRTCManager {
             Log.d(TAG, String.format("onRoomStateChanged: %s, %s, %d, %s", roomId, uid, state, extraInfo));
             if (isFirstJoinRoomSuccess(state, extraInfo)) {
                 SolutionDemoEventManager.post(new SDKJoinChannelSuccessEvent(roomId, uid));
+            } else if (isReconnectSuccess(state, extraInfo)) {
+                SolutionDemoEventManager.post(new SDKReconnectToRoomEvent(roomId));
             }
         }
 
         @Override
-        public void onStreamAdd(RTCStream stream) {
-            super.onStreamAdd(stream);
+        public void onUserPublishScreen(String uid, MediaStreamType type) {
             AppExecutors.mainThread().execute(() -> {
-                if (stream == null || TextUtils.isEmpty(stream.userId)) {
-                    return;
-                }
-                MLog.d(TAG, "onStreamAdd: " + stream);
+                MLog.d(TAG, "onUserPublishScreen: " + uid + ", type: " + type);
                 String screenUid = MeetingDataManager.getScreenShareUid();
-                if (TextUtils.equals(screenUid, stream.userId) && stream.isScreen) {
+                if (TextUtils.equals(screenUid, uid)) {
                     List<MeetingUserInfo> users = MeetingDataManager.getAllMeetingUserInfoList();
                     String userName = "";
                     for (MeetingUserInfo userInfo : users) {
-                        if (TextUtils.equals(userInfo.userId, stream.userId)) {
+                        if (TextUtils.equals(userInfo.userId, uid)) {
                             userName = userInfo.userName;
                             break;
                         }
                     }
-                    MeetingDataManager.addOrUpdateScreenView(stream.userId, userName, true);
+                    MeetingDataManager.addOrUpdateScreenView(uid, userName, true);
                     return;
                 }
                 List<MeetingUserInfo> users = MeetingDataManager.getMeetingShowingUserInfoList();
@@ -159,12 +162,28 @@ public class MeetingRTCManager {
                     if (info == null) {
                         continue;
                     }
-                    if (TextUtils.equals(stream.userId, info.userId)) {
-                        if (stream.isScreen) {
-                            subscribeScreen(stream.userId);
-                        } else {
-                            subscribeStream(stream.userId);
-                        }
+                    if (TextUtils.equals(uid, info.userId)) {
+                        subscribeScreen(uid);
+                        return;
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void onUserPublishStream(String uid, MediaStreamType type) {
+            AppExecutors.mainThread().execute(() -> {
+                MLog.d(TAG, "onUserPublishStream: " + uid + ", type: " + type);
+                List<MeetingUserInfo> users = MeetingDataManager.getMeetingShowingUserInfoList();
+                if (users.isEmpty()) {
+                    return;
+                }
+                for (MeetingUserInfo info : users) {
+                    if (info == null) {
+                        continue;
+                    }
+                    if (TextUtils.equals(uid, info.userId)) {
+                        subscribeStream(uid);
                         return;
                     }
                 }
@@ -219,7 +238,8 @@ public class MeetingRTCManager {
     private RTCVideo mRTCVideo;
     private RTCRoom mRTCRoom;
 
-    private MeetingRTCManager() {}
+    private MeetingRTCManager() {
+    }
 
     public static MeetingRTCManager ins() {
         if (sInstance == null) {
@@ -237,19 +257,19 @@ public class MeetingRTCManager {
         mRTSClient = new MeetingRTSClient(mRTCVideo, rtmInfo);
         mRTCVideoEventHandler.setBaseClient(mRTSClient);
         mRTCRoomEventHandler.setBaseClient(mRTSClient);
-        mRTSClient.login(rtmInfo.rtmToken, (resultCode, message) ->
+        mRTSClient.login(rtmInfo.rtsToken, (resultCode, message) ->
                 Log.d(TAG, String.format("notifyLoginResult: %d  %s", resultCode, message)));
     }
 
     private void initEngine(String appId, String bid) {
         Log.d(TAG, String.format("initEngine: appId: %s", appId));
         destroyEngine();
-        mRTCVideo = RTCVideo.createRTCVideo(Utilities.getApplicationContext(), appId, mRTCVideoEventHandler, null, null);
+        mRTCVideo = RTCVideo.createRTCVideo(AppUtil.getApplicationContext(), appId, mRTCVideoEventHandler, null, null);
         mRTCVideo.setBusinessId(bid);
         // 设置音频场景类型
         mRTCVideo.setAudioScenario(AudioScenarioType.AUDIO_SCENARIO_COMMUNICATION);
         enableLocalAudio(true);
-        setRemoteSubscribeFallbackOption(SubscribeFallbackOptions.SUBSCRIBE_FALLBACK_OPTIONS_AUDIO_ONLY);
+        setRemoteSubscribeFallbackOption(SubscribeFallbackOptions.SUBSCRIBE_FALLBACK_OPTIONS_DISABLED);
         setLocalVideoMirrorMode(MirrorType.MIRROR_TYPE_RENDER_AND_ENCODER);
         enableAudioVolumeIndication(VOLUME_INTERVAL_MS, VOLUME_SMOOTH);
     }
@@ -262,18 +282,6 @@ public class MeetingRTCManager {
         if (mRTCVideo != null) {
             RTCVideo.destroyRTCVideo();
             mRTCVideo = null;
-        }
-    }
-
-    public void muteLocalAudioStream(boolean mute) {
-        MLog.d(TAG, "muteLocalAudioStream: " + mute);
-        if (mRTCRoom == null) {
-            return;
-        }
-        if (mute) {
-            mRTCRoom.unpublishStream(MediaStreamType.RTC_MEDIA_STREAM_TYPE_AUDIO);
-        } else {
-            mRTCRoom.publishStream(MediaStreamType.RTC_MEDIA_STREAM_TYPE_AUDIO);
         }
     }
 
@@ -336,7 +344,7 @@ public class MeetingRTCManager {
         mRTCVideo.setVideoEncoderConfig(videoEncoderConfig);
     }
 
-    public void setScreenShareProfiles(VideoEncoderConfig videoEncoderConfig) {
+    public void setScreenShareProfiles(ScreenVideoEncoderConfig videoEncoderConfig) {
         MLog.d(TAG, "setScreenShareProfiles: " + videoEncoderConfig);
         if (mRTCVideo == null) {
             return;
@@ -352,20 +360,20 @@ public class MeetingRTCManager {
         mRTCVideo.setLocalVideoCanvas(StreamIndex.STREAM_INDEX_MAIN, canvas);
     }
 
-    public void setupRemoteVideo(VideoCanvas canvas) {
-        MLog.d(TAG, "setupRemoteVideo: " + canvas.uid);
+    public void setupRemoteVideo(RemoteStreamKey streamKey, VideoCanvas canvas) {
+        MLog.d(TAG, "setupRemoteScreen: " + streamKey.getUserId());
         if (mRTCVideo == null) {
             return;
         }
-        mRTCVideo.setRemoteVideoCanvas(canvas.uid, StreamIndex.STREAM_INDEX_MAIN, canvas);
+        mRTCVideo.setRemoteVideoCanvas(streamKey, canvas);
     }
 
-    public void setupRemoteScreen(VideoCanvas canvas) {
-        MLog.d(TAG, "setupRemoteScreen: " + canvas.uid);
+    public void setupRemoteScreen(RemoteStreamKey streamKey, VideoCanvas canvas) {
+        MLog.d(TAG, "setupRemoteScreen: " + streamKey.getUserId());
         if (mRTCVideo == null) {
             return;
         }
-        mRTCVideo.setRemoteVideoCanvas(canvas.uid, StreamIndex.STREAM_INDEX_SCREEN, canvas);
+        mRTCVideo.setRemoteVideoCanvas(streamKey, canvas);
     }
 
     public void joinRoom(String token, String roomId, String userId) {
@@ -412,7 +420,7 @@ public class MeetingRTCManager {
     }
 
     public void enableAudioVolumeIndication(int interval, int smooth) {
-        MLog.d(TAG, String.format(Locale.ENGLISH, "enableAudioVolumeIndication: %d  %d", interval ,smooth));
+        MLog.d(TAG, String.format(Locale.ENGLISH, "enableAudioVolumeIndication: %d  %d", interval, smooth));
         if (mRTCVideo == null) {
             return;
         }
@@ -463,7 +471,7 @@ public class MeetingRTCManager {
     public void startScreenSharing(Intent intent, ScreenSharingParameters params) {
         MLog.d(TAG, "startScreenCapture: " + params);
         if (mRTCVideo != null) {
-            VideoEncoderConfig config = new VideoEncoderConfig();
+            ScreenVideoEncoderConfig config = new ScreenVideoEncoderConfig();
             config.frameRate = params.frameRate;
             config.height = params.maxHeight;
             config.width = params.maxWidth;
@@ -481,9 +489,5 @@ public class MeetingRTCManager {
         if (mRTCRoom != null) {
             mRTCRoom.unpublishScreen(MediaStreamType.RTC_MEDIA_STREAM_TYPE_BOTH);
         }
-    }
-
-    public void feedback(int grade, int type, String description) {
-        MLog.d(TAG, String.format(Locale.ENGLISH, "feedback: %d  %d  %s", grade, type, description));
     }
 }
