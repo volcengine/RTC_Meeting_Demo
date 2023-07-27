@@ -602,6 +602,17 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
     }
   };
 
+  _handleOffline = () => {
+    /** Pass on the host to others */
+    const isHost = this.props.meeting.meetingInfo.host_id === this.props.currentUser.userId;
+    if (isHost) {
+      const candidate = this.props.meeting.meetingUsers.find((user) => !user.is_host);
+      candidate && this.props.mc?.changeHost({ user_id: candidate?.user_id });
+    }
+    /** Leave room */
+    this._handleLeave();
+  }
+
   _handleLeave = async () => {
     this.props.setMeetingStatus('end');
     await this.props.rtc.leave();
@@ -620,17 +631,15 @@ class MeetingEvent extends React.Component<IProps, IMeetingState> {
       const res = await this.props.mc?.reconnect().catch((err) => {
         console.log('reconnect err:', err);
 
-        if (err.code === 404) {
-          message.error('断线时间过长，无法重连');
-          this._handleLeave();
-        }
+        message.error('断线时间过长，无法重连');
+        this._handleOffline();
       });
 
       console.log('reconnect res:', res);
 
       if (res?.code === 418) {
         message.error('断线时间过长，无法重连');
-        this._handleLeave();
+        this._handleOffline();
       }
 
       if (res?.code === 422) {

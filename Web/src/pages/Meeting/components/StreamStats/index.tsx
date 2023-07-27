@@ -59,10 +59,40 @@ const StreamStats: FC<StatsProps> = ({ settings, streamStatses }) => {
     [streamStatses.local]
   ) as LocalStats;
 
-  const remote = useMemo(
-    () => streamStatses.remoteStreams,
-    [streamStatses.remoteStreams]
-  ) as { [key: string]: RemoteStats };
+  const remoteMediaDetail: Record<string, any> = useMemo(
+    () => {
+      const streamMap = streamStatses.remoteStreams;
+
+      const resolutionOrder = Object.values(streamMap).sort(
+        (a, b) => (a.videoStats.width || 0) * (a.videoStats.height || 0) - (b.videoStats.width || 0) * (b.videoStats.height || 0)
+      ).map((item) => { return { width: item.videoStats.width, height: item.videoStats.height }; });
+      
+      const fpsOrder = Object.values(streamMap).sort(
+        (a, b) => (a.videoStats.decoderOutputFrameRate || 0) - (b.videoStats.decoderOutputFrameRate || 0)
+      ).map((item) => { return { decoderOutputFrameRate: item.videoStats.decoderOutputFrameRate?.toFixed(1) || 0 }; });
+
+      const average: Record<string, number> = {
+        rttVideo: 0,
+        rttAudio: 0,
+        bitVideo: 0,
+        bitAudio: 0,
+        lossVideo: 0,
+        lossAudio: 0,
+      };
+      Object.values(streamMap).forEach((info) => {
+        average.rttVideo += info.videoStats.e2eDelay;
+      });
+      Object.keys(average).forEach((key) => {
+        average[key] = average[key] / resolutionOrder.length;
+      });
+      return {
+        ...average,
+        resolution: resolutionOrder.length ? `${resolutionOrder[0].width || 0}*${resolutionOrder[0].height || 0} - ${resolutionOrder.at(-1)?.width || 0}*${resolutionOrder.at(-1)?.height || 0}` : `0*0 - 0*0`,
+        fps: fpsOrder.length ? `${fpsOrder[0].decoderOutputFrameRate} - ${fpsOrder.at(-1)?.decoderOutputFrameRate}` : `0 - 0`,
+      };
+    }
+    , [JSON.stringify(streamStatses.remoteStreams)]
+  );
 
   return settings?.realtimeParam ? (
     <div className={styles['status']}>
@@ -81,7 +111,35 @@ const StreamStats: FC<StatsProps> = ({ settings, streamStatses }) => {
         BIT(AUDIO)：{Utils.getThousand(local?.audioStats.sentKBitrate)}kbps
       </div>
 
-      {Object.keys(remote).map((i) => {
+      {/* Params of remote should be scaled, only show one result. */}
+      {
+        Object.keys(streamStatses.remoteStreams || {})?.length ?
+        <>
+          <div style={{ marginTop: 10 }}>[REMOTE]</div>
+          <div>RTT(VIDEO): {remoteMediaDetail.rttVideo.toFixed(1)}ms</div>
+          <div>RTT(AUDIO): {remoteMediaDetail.rttAudio.toFixed(1)}ms</div>
+          <div>CPU: 0% | 0%</div>
+          <div>
+            BIT(VIDEO): {Utils.getThousand(remoteMediaDetail.bitVideo).toFixed(1)}kbps
+          </div>
+          <div>
+            BIT(AUDIO): {Utils.getThousand(remoteMediaDetail.bitAudio).toFixed(1)}kbps
+          </div>
+          <div>
+            RES: {remoteMediaDetail.resolution}
+          </div>
+          <div>
+            FPS: {remoteMediaDetail.fps}
+          </div>
+          <div>
+            LOSS(VEDIO): {remoteMediaDetail.lossVideo.toFixed(1)}%
+          </div>
+          <div>
+            LOSS(AUDIO)：{remoteMediaDetail.lossAudio.toFixed(1)}%
+          </div>
+        </> : null
+      }
+      {/* {Object.keys(remote).map((i) => {
         const remoteStats = remote[i];
         return (
           <>
@@ -114,7 +172,7 @@ const StreamStats: FC<StatsProps> = ({ settings, streamStatses }) => {
             </div>
           </>
         );
-      })}
+      })} */}
     </div>
   ) : null;
 };
