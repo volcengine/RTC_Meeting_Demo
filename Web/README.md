@@ -7,7 +7,7 @@
 
 ### 配置 Demo 工程文件
 
-1. 全局安装 node、yarn
+1. 全局安装 node、yarn, node 版本 <=16.
 2. 进入工程目录，修改 AppID。使用控制台获取的 AppID 覆盖 src 文件夹下 config.ts 里的 appId 值
 3. 进入工程目录，修改 Token。临时 Token 覆盖 src 文件下 config.ts 里的 token 值
 

@@ -1575,10 +1575,10 @@
     "@umijs/babel-preset-umi" "3.5.40"
     "@umijs/deps" "3.5.40"
 
-"@volcengine/rtc@^4.54.0":
-  version "4.54.1"
-  resolved "https://registry.yarnpkg.com/@volcengine/rtc/-/rtc-4.54.1.tgz#e1299b95694b2afd1860027aef7b955f3f373921"
-  integrity sha512-TxBMjSG+KKB6s0ivDlM0pPqM2nLCg6TYxS2x7bpXOvoA4wXjMzz9QqMmr9AHVdYANW09QivHhJuXphIvIy6mnQ==
+"@volcengine/rtc@~4.66.13":
+  version "4.66.13"
+  resolved "https://registry.yarnpkg.com/@volcengine/rtc/-/rtc-4.66.13.tgz#aab404ba4e3df4732488736e835d811c861ce8b1"
+  integrity sha512-OOrWihkeEbCCqh0e6Zi/yx2gEh+4PQ603ygyhoEJnSiyWtNaUQcAbVr+IyAD0zefNxwbDObENoCTAuXeNJIjrg==
   dependencies:
     eventemitter3 "^4.0.7"
 
