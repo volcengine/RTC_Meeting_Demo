@@ -20,3 +20,4 @@ dist.zip
 .umi-production
 
 .idea/
+yarn.lock

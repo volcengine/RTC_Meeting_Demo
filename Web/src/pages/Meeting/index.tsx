@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { message } from 'antd';
 import { history } from 'umi';
 import Utils from '@/utils/utils';
@@ -86,7 +86,7 @@ class Meeting extends Component<MeetingProps, MeetingState> {
     await this.props.rtc.engine.stopAudioCapture();
     await this.props.rtc.engine.stopVideoCapture();
     await this.props.rtc.engine.stopScreenCapture();
-    this.props.rtc.engine.unpublishScreen(MediaType.AUDIO_AND_VIDEO);
+    await this.props.rtc.engine.unpublishScreen(MediaType.AUDIO_AND_VIDEO).catch(console.warn);
 
     history.push(`/?roomId=${this.roomId}`);
   };
@@ -95,11 +95,11 @@ class Meeting extends Component<MeetingProps, MeetingState> {
   leavingMeeting = (): void => {
     const { props } = this;
     props.setMeetingStatus('end');
-    props.rtc.leave();
     props.mc?.leaveMeeting();
     if (props.meeting.meetingInfo.screen_shared_uid) {
       props.mc?.endShareScreen();
     }
+    props.rtc.leave();
     props.rtc.removeEventListener();
     // this.setState({ leaving: false });
     this.end();
