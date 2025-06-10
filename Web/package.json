@@ -32,7 +32,7 @@
     "@ant-design/icons": "^4.7.0",
     "@ant-design/pro-layout": "^6.5.0",
     "@umijs/hooks": "^1.9.3",
-    "@volcengine/rtc": "~4.66.15",
+    "@volcengine/rtc": "~4.66.16",
     "antd": "^4.22.0",
     "debug": "^4.3.1",
     "dva-model-creator": "^0.4.3",
